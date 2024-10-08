@@ -1,0 +1,34 @@
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+eclipse.project.name = appName + '-core'
+
+dependencies {
+  api "com.badlogicgames.gdx-controllers:gdx-controllers-core:$gdxControllersVersion"
+  api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
+  api "com.badlogicgames.gdx:gdx:$gdxVersion"
+  api "com.crashinvaders.lml:gdx-kiwi:$lmlVersion"
+  api "com.crashinvaders.lml:gdx-lml-vis:$lmlVersion"
+  api "com.crashinvaders.lml:gdx-lml:$lmlVersion"
+  api "com.esotericsoftware.spine:spine-libgdx:$spineRuntimeVersion"
+  api "com.github.payne911:PieMenu:$pieMenuVersion"
+  api "com.github.raeleus.TenPatch:tenpatch:$tenPatchVersion"
+  api "com.github.raeleus.stripe:stripe:$stripeVersion"
+  api "com.github.tommyettinger:crux:$cruxVersion"
+  api "com.github.tommyettinger:formic:$formicVersion"
+  api "com.github.tommyettinger:make_some_noise:$makeSomeNoiseVersion"
+  api "com.github.tommyettinger:regexodus:$regExodusVersion"
+  api "com.github.tommyettinger:textratypist:$textratypistVersion"
+  api "com.kotcrab.vis:vis-ui:$visUiVersion"
+  api "com.rafaskoberg.gdx:typing-label:$typingLabelVersion"
+  api "de.golfgl.gdxcontrollerutils:gdx-controllerutils-mapping:$controllerMappingVersion"
+  api "de.golfgl.gdxcontrollerutils:gdx-controllerutils-scene2d:$controllerScene2DVersion"
+  api "org.mini2Dx:universal-tween-engine:$universalTweenVersion"
+  api "space.earlygrey:shapedrawer:$shapeDrawerVersion"
+  api "space.earlygrey:simple-graphs:$simpleGraphsVersion"
+  api project(':shared')
+  annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+  compileOnly "org.projectlombok:lombok:$lombokVersion"
+
+  if(enableGraalNative == 'true') {
+    implementation "io.github.berstanio:gdx-svmhelper-annotations:$graalHelperVersion"
+  }
+}
