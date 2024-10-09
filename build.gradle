@@ -10,7 +10,14 @@ buildscript {
   }
   dependencies {
     classpath "io.freefair.gradle:lombok-plugin:8.3"
+    classpath "com.badlogicgames.gdx:gdx-tools:$gdxVersion"
+  }
+}
 
+import com.badlogic.gdx.tools.texturepacker.TexturePacker
+task texturePacker {
+  doLast {
+    TexturePacker.processIfModified("${project.rootDir}/sprites", "${project.rootDir}/assets/sprites", "sprites")
   }
 }
 
@@ -54,6 +61,7 @@ configure(subprojects) {
 
   compileJava {
     options.incremental = true
+    dependsOn texturePacker
   }
 }
 
