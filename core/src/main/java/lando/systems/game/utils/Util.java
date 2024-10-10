@@ -2,10 +2,14 @@ package lando.systems.game.utils;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.NinePatch;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.GdxRuntimeException;
-import lando.systems.game.Config;
 import lando.systems.game.Config.Flag;
 
 import java.util.List;
@@ -93,5 +97,56 @@ public class Util {
             default: Util.log("HSV->RGB", "Failed to convert HSV->RGB(h: %f, s: %f, v: %f)".formatted(hue, saturation, value));
         }
         return outColor;
+    }
+
+    // ------------------------------------------------------------------------
+    // Drawing related
+    // ------------------------------------------------------------------------
+
+    // Circle convenience methods -------------------------
+
+    public static void draw(SpriteBatch batch, TextureRegion texture, Circle circle) {
+        draw(batch, texture, circle, 1f);
+    }
+
+    public static void draw(SpriteBatch batch, TextureRegion texture, Circle circle, float scale) {
+        var x = circle.x;
+        var y = circle.y;
+        var r = circle.radius * scale;
+        batch.draw(texture, x - r, y - r, 2 * r, 2 * r);
+    }
+
+    // Rectangle convenience methods ----------------------
+
+    public static void draw(SpriteBatch batch, TextureRegion texture, Rectangle rect) {
+        draw(batch, texture, rect, 1f);
+    }
+
+    public static void draw(SpriteBatch batch, TextureRegion texture, Rectangle rect, float scale) {
+        draw(batch, texture, rect, 0f, 0f, scale, scale, 0f);
+    }
+
+    public static void draw(SpriteBatch batch, TextureRegion texture, Rectangle rect, float ox, float oy, float sx, float sy, float rot) {
+        var x = rect.x;
+        var y = rect.y;
+        var h = rect.height;
+        var w = rect.width;
+        batch.draw(texture, x, y, ox, oy, w, h, sx, sy, rot);
+    }
+
+    public static void draw(SpriteBatch batch, NinePatch ninePatch, Rectangle rect) {
+        draw(batch, ninePatch, rect, 1f);
+    }
+
+    public static void draw(SpriteBatch batch, NinePatch ninePatch, Rectangle rect, float scale) {
+        draw(batch, ninePatch, rect, 0f, 0f, scale, scale, 0f);
+    }
+
+    public static void draw(SpriteBatch batch, NinePatch ninePatch, Rectangle rect, float ox, float oy, float sx, float sy, float rot) {
+        var x = rect.x;
+        var y = rect.y;
+        var h = rect.height;
+        var w = rect.width;
+        ninePatch.draw(batch, x, y, ox, oy, w, h, sx, sy, rot);
     }
 }

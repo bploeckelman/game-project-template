@@ -20,7 +20,7 @@ public class Config {
           GLOBAL(true)
         , RENDER(false)
         , UI(false)
-        , LOG(false)
+        , LOG(true)
         , FRAME_STEP(false)
         , START_ON_GAMESCREEN(false)
         ;
@@ -32,11 +32,11 @@ public class Config {
         }
 
         public boolean isEnabled() {
-            return GLOBAL.isEnabled() && isEnabled;
+            return GLOBAL.isEnabled && isEnabled;
         }
 
         public boolean isDisabled() {
-            return GLOBAL.isDisabled() || !isEnabled;
+            return !GLOBAL.isEnabled || !isEnabled;
         }
 
         /**

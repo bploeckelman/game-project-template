@@ -16,7 +16,11 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import lando.systems.game.assets.Assets;
-import lando.systems.game.assets.Transition;
+import lando.systems.game.assets.ScreenTransitions;
+import lando.systems.game.screens.GameScreen;
+import lando.systems.game.screens.TitleScreen;
+import lando.systems.game.screens.Transition;
+import lando.systems.game.screens.BaseScreen;
 import lando.systems.game.utils.Time;
 import lando.systems.game.utils.accessors.CameraAccessor;
 import lando.systems.game.utils.accessors.CircleAccessor;
@@ -47,6 +51,7 @@ public class Main extends ApplicationAdapter {
         Time.init();
 
         assets = new Assets();
+        Transition.init(assets);
 
         tween = new TweenManager();
         Tween.setWaypointsLimit(4);
@@ -60,8 +65,8 @@ public class Main extends ApplicationAdapter {
         Tween.registerAccessor(Vector3.class, new Vector3Accessor());
 
         var format = Pixmap.Format.RGBA8888;
-        int width = Config.Screen.framebuffer_width;
-        int height = Config.Screen.framebuffer_height;
+        int width = Config.framebuffer_width;
+        int height = Config.framebuffer_height;
         var hasDepth = true;
 
         frameBuffer = new FrameBuffer(format, width, height, hasDepth);
@@ -71,10 +76,10 @@ public class Main extends ApplicationAdapter {
         frameBufferRegion.flip(false, true);
 
         windowCamera = new OrthographicCamera();
-        windowCamera.setToOrtho(false, Config.Screen.window_width, Config.Screen.window_height);
+        windowCamera.setToOrtho(false, Config.window_width, Config.window_height);
         windowCamera.update();
 
-        var startingScreen = Config.Flags.start_on_gamescreen ? new GameScreen() : new TitleScreen();
+        var startingScreen = Config.Flag.START_ON_GAMESCREEN.isEnabled() ? new GameScreen() : new TitleScreen();
         setScreen(startingScreen);
     }
 
@@ -109,30 +114,31 @@ public class Main extends ApplicationAdapter {
         if (Transition.inProgress()) {
             Transition.render(assets.batch);
         } else {
-            currentScreen.renderFrameBuffers(assets.batch);
+            currentScreen.renderOffscreenBuffers(assets.batch);
             currentScreen.render(assets.batch);
         }
     }
 
-    public boolean setScreen(BaseScreen newScreen) {
-        return setScreen(newScreen, null, false);
+    public void setScreen(BaseScreen newScreen) {
+        setScreen(newScreen, null, false);
     }
 
-    public boolean setScreen(BaseScreen newScreen, Transition.Type transitionType) {
-        return setScreen(newScreen, transitionType, false);
+    public void setScreen(BaseScreen newScreen, ScreenTransitions.Type transitionType) {
+        setScreen(newScreen, transitionType, false);
     }
 
-    public boolean setScreen(BaseScreen newScreen, Transition.Type transitionType, boolean instant) {
+    public void setScreen(BaseScreen newScreen, ScreenTransitions.Type transitionType, boolean instant) {
         // nothing to transition from, just set the current screen
         if (currentScreen == null) {
             currentScreen = newScreen;
-            return true;
+            return;
         }
 
         // only one transition allowed at a time
-        if (Transition.inProgress()) return false;
+        if (Transition.inProgress()) {
+            return;
+        }
 
         Transition.to(newScreen, transitionType, instant);
-        return true;
     }
 }

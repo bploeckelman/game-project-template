@@ -1,4 +1,4 @@
-package lando.systems.game.assets;
+package lando.systems.game.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -8,24 +8,15 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import com.badlogic.gdx.math.MathUtils;
-import lando.systems.game.utils.Util;
-import lando.systems.ld56.Config;
-import lando.systems.ld56.Main;
-import lando.systems.ld56.screens.BaseScreen;
-import lando.systems.ld56.utils.Time;
+import lando.systems.game.Config;
+import lando.systems.game.Main;
+import lando.systems.game.assets.Assets;
+import lando.systems.game.assets.ScreenTransitions;
+import lando.systems.game.utils.Time;
 
-import java.util.HashMap;
-import java.util.Map;
+import static lando.systems.game.assets.ScreenTransitions.Type;
 
-public class Transition implements AssetContainer {
-
-    public enum Type {
-        BLINDS, CIRCLECROP, CROSSHATCH, CUBE, DISSOLVE, DOOMDRIP, DOORWAY,
-        DREAMY, HEART, PIXELIZE, RADIAL, RIPPLE, SIMPLEZOOM, STEREO
-    }
-
-    private static final Map<Type, ShaderProgram> shaders = new HashMap<>();
+public class Transition {
 
     private static class FrameBufferObjects {
         final FrameBuffer original;
@@ -35,8 +26,8 @@ public class Transition implements AssetContainer {
 
         FrameBufferObjects() {
             var format = Pixmap.Format.RGB888;
-            var width = Config.Screen.window_width;
-            var height = Config.Screen.window_height;
+            var width = Config.window_width;
+            var height = Config.window_height;
             original = new FrameBuffer(format, width, height, false);
             transition = new FrameBuffer(format, width, height, false);
             originalTexture = original.getColorBufferTexture();
@@ -44,24 +35,17 @@ public class Transition implements AssetContainer {
         }
     }
 
+    private static ScreenTransitions transitions;
     private static FrameBufferObjects fbo;
     private static ShaderProgram shader;
     private static BaseScreen next;
     private static float percent;
     private static boolean instant;
 
-    public static void init() {
-        var prefix = "shaders/transitions/";
-        var vertex = prefix + "default.vert";
-        for (var type : Type.values()) {
-            var filename = type.name().toLowerCase() + ".frag";
-            var fragment = prefix + filename;
-            var shader = Util.loadShader(vertex, fragment);
-            shaders.put(type, shader);
-        }
-
+    public static void init(Assets assets) {
+        transitions = assets.get(ScreenTransitions.class);
         fbo = new FrameBufferObjects();
-        shader = get(Type.BLINDS);
+        shader = transitions.get(Type.random());
         next = null;
 
         // NOTE: must be 1 on construction to indicate that there's not a transition in progress
@@ -78,7 +62,11 @@ public class Transition implements AssetContainer {
         percent = 0;
         instant = immediate;
         next = newScreen;
-        shader = (type == null) ? random() : get(type);
+
+        if (type == null) {
+            type = Type.random();
+        }
+        shader = transitions.get(type);
     }
 
     public static void update(float dt) {
@@ -101,7 +89,7 @@ public class Transition implements AssetContainer {
     public static void render(SpriteBatch batch) {
         // update transition between current and next screens
         next.update(Time.delta);
-        next.renderFrameBuffers(batch);
+        next.renderOffscreenBuffers(batch);
 
         // render next screen to a buffer
         fbo.transition.begin();
@@ -135,15 +123,5 @@ public class Transition implements AssetContainer {
             batch.end();
         }
         batch.setShader(null);
-    }
-
-    private static ShaderProgram get(Type type) {
-        return shaders.get(type);
-    }
-
-    private static ShaderProgram random() {
-        var index = MathUtils.random(Type.values().length - 1);
-        var type = Type.values()[index];
-        return shaders.get(type);
     }
 }

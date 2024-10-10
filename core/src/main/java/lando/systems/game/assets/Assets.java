@@ -13,7 +13,9 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.I18NBundle;
+import com.badlogic.gdx.utils.ObjectMap;
 import lando.systems.game.Config;
+import lando.systems.game.utils.Util;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 public class Assets implements Disposable {
@@ -21,13 +23,13 @@ public class Assets implements Disposable {
     public enum Load { SYNC, ASYNC }
     public boolean loaded = false;
 
+    public final ObjectMap<Class<? extends AssetContainer<?, ?>>, AssetContainer<?, ?>> containers;
     public final Preferences prefs;
     public final AssetManager mgr;
     public final SpriteBatch batch;
     public final ShapeDrawer shapes;
     public final GlyphLayout layout;
     public final Array<Disposable> disposables;
-    public final Array<AssetContainer> containers;
 
     public TextureAtlas atlas;
     public I18NBundle strings;
@@ -43,13 +45,16 @@ public class Assets implements Disposable {
     public Assets(Load load) {
         prefs = Gdx.app.getPreferences(Config.preferences_name);
 
+        containers = new ObjectMap<>();
+        containers.put(Icons.class, new Icons());
+        containers.put(Patches.class, new Patches());
+        containers.put(ScreenTransitions.class, new ScreenTransitions());
+
         mgr = new AssetManager();
         batch = new SpriteBatch();
         shapes = new ShapeDrawer(batch);
         layout = new GlyphLayout();
         disposables = new Array<>();
-        containers = new Array<>();
-
         disposables.add(mgr);
         disposables.add(batch);
 
@@ -61,10 +66,10 @@ public class Assets implements Disposable {
             pixmap.drawPixel(1, 0);
             pixmap.drawPixel(0, 1);
             pixmap.drawPixel(1, 1);
-        }
-        pixel = new Texture(pixmap);
-        pixelRegion = new TextureRegion(pixel);
 
+            pixel = new Texture(pixmap);
+            pixelRegion = new TextureRegion(pixel);
+        }
         disposables.add(pixmap);
         disposables.add(pixel);
 
@@ -77,15 +82,13 @@ public class Assets implements Disposable {
             // textures
             mgr.load("images/libgdx.png", Texture.class);
 
-            // fonts
-            // TODO: asset loader for FreeTypeFont that takes ttf filename and params?
+            // fonts // TODO: asset loader for FreeTypeFont that takes ttf filename and params?
 
             // music
 
             // sounds
 
-            // shaders
-            // TODO: asset loader for ShaderProgram, or just use the util method?
+            // shaders // TODO: asset loader for ShaderProgram, or just use the util method?
         }
 
         if (load == Load.SYNC) {
@@ -103,10 +106,28 @@ public class Assets implements Disposable {
         atlas = mgr.get("sprites/sprites.atlas");
         strings = mgr.get("i18n/strings");
 
+        for (var container : containers.values()) {
+            container.init(this);
+        }
+
         loaded = true;
         return 1;
     }
 
+    public <AssetContainerType extends AssetContainer<?, ?>>
+    AssetContainerType get(Class<AssetContainerType> containerType) {
+        if (containerType == null) {
+            Util.log("Assets", "Unable to get AssetContainer, null container type class provided");
+            return null;
+        }
+
+        var container = containers.get(containerType);
+        if (container == null) {
+            Util.log("Assets", "AssetContainer not found for container type '%s'".formatted(containerType.getName()));
+            return null;
+        }
+        return containerType.cast(container);
+    }
 
     @Override
     public void dispose() {

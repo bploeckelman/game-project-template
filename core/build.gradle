@@ -5,7 +5,6 @@ dependencies {
   api "com.badlogicgames.gdx-controllers:gdx-controllers-core:$gdxControllersVersion"
   api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
   api "com.badlogicgames.gdx:gdx:$gdxVersion"
-  api "com.crashinvaders.lml:gdx-kiwi:$lmlVersion"
   api "com.crashinvaders.lml:gdx-lml-vis:$lmlVersion"
   api "com.crashinvaders.lml:gdx-lml:$lmlVersion"
   api "com.esotericsoftware.spine:spine-libgdx:$spineRuntimeVersion"
