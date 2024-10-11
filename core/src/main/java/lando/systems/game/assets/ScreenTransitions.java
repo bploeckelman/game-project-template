@@ -6,7 +6,7 @@ import lando.systems.game.utils.Util;
 
 public class ScreenTransitions extends AssetContainer<ScreenTransitions.Type, ShaderProgram> {
 
-    public enum Type implements AssetType<ShaderProgram> {
+    public enum Type implements AssetEnum<ShaderProgram> {
           BLINDS
         , CIRCLECROP
         , CROSSHATCH

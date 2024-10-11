@@ -7,7 +7,7 @@ public class Patches extends AssetContainer<Patches.Type, NinePatch> {
 
     private static final String folder = "patch/";
 
-    public enum Type implements AssetType<NinePatch> {
+    public enum Type implements AssetEnum<NinePatch> {
           PLAIN("plain", 2, 2, 2, 2)
         , PLAIN_DIM("plain-dim", 2, 2, 2, 2)
         , PLAIN_GRADIENT("plain-gradient", 2, 2, 2, 2)

@@ -123,10 +123,34 @@ public class Assets implements Disposable {
 
         var container = containers.get(containerType);
         if (container == null) {
-            Util.log("Assets", "AssetContainer not found for container type '%s'".formatted(containerType.getName()));
+            Util.log("Assets", "AssetContainer not found for type '%s'".formatted(containerType.getName()));
             return null;
         }
         return containerType.cast(container);
+    }
+
+    /**
+     * Get resource from {@link AssetContainer} managing assets keyed by {@link AssetEnum} for a given {@link Resource} type
+     * @param containerType {@link Class} instance corresponding to the {@link Container} type
+     * @param assetType an {@link Enum<Asset>} value for the given {@link Asset} type, the key to lookup an associated {@link Resource} instance
+     * @param <Asset> {@link AssetEnum} type
+     * @param <Resource> {@link AssetEnum<Resource>} resource type
+     * @param <Container> {@link AssetContainer} type for the given Asset/Resource types
+     */
+    public <Asset extends Enum<Asset> & AssetEnum<Resource>, Resource,
+            Container extends AssetContainer<Asset, Resource>>
+    Resource get(Class<Container> containerType, Asset assetType) {
+        var container = get(containerType);
+        if (container == null) {
+            return null;
+        }
+
+        var asset = container.get(assetType);
+        if (asset == null) {
+            Util.log("Assets", "Asset(%s) not found in Container(%s)".formatted(assetType, containerType));
+            return null;
+        }
+        return asset;
     }
 
     @Override

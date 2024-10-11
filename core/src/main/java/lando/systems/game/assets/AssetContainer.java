@@ -3,7 +3,7 @@ package lando.systems.game.assets;
 import com.badlogic.gdx.utils.ObjectMap;
 import lando.systems.game.utils.Util;
 
-public abstract class AssetContainer<T extends Enum<T> & AssetType<ResourceType>, ResourceType> {
+public abstract class AssetContainer<T extends Enum<T> & AssetEnum<ResourceType>, ResourceType> {
 
     protected final String containerClassName;
     protected final Class<ResourceType> resourceTypeClass;

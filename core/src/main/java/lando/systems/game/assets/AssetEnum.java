@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
-public interface AssetType<ResourceType> {
+public interface AssetEnum<ResourceType> {
 
     class MethodImplementationMissingException extends GdxRuntimeException {
         private static final long serialVersionUID = -8967847562533119940L;

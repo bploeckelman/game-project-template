@@ -13,6 +13,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ScreenUtils;
 import lando.systems.game.assets.Icons;
 import lando.systems.game.assets.Patches;
+import lando.systems.game.scene.Scene;
 import lando.systems.game.utils.Util;
 
 public class GameScreen extends BaseScreen {
@@ -28,15 +29,19 @@ public class GameScreen extends BaseScreen {
     private final TextureRegion hitTexture;
     private final NinePatch ninePatch;
 
+    private final Scene<GameScreen> scene;
+
     private TextureRegion texture;
     private float timer;
 
     public GameScreen() {
         var margin = 50f;
         var radius = 50f;
+        var centerX = windowCamera.viewportWidth / 2;
+        var centerY = windowCamera.viewportHeight / 2;
         var speed = MathUtils.random(300f, 500f);
         var angle = MathUtils.random(0f, 360f);
-        circle.set(windowCamera.viewportWidth / 2f, windowCamera.viewportHeight / 2f, radius);
+        circle.set(centerX, centerY, radius);
         vel.set(MathUtils.cosDeg(angle) * speed, MathUtils.sinDeg(angle) * speed);
         bounds.set(margin, margin, windowCamera.viewportWidth - 2 * margin, windowCamera.viewportHeight - 2 * margin);
 
@@ -48,6 +53,8 @@ public class GameScreen extends BaseScreen {
 
         texture = okTexture;
         timer = 0f;
+
+        this.scene = new Scene<>(this);
     }
 
     @Override
@@ -99,21 +106,26 @@ public class GameScreen extends BaseScreen {
             timer = 0.25f;
             texture = hitTexture;
         }
+
+        scene.update(dt);
     }
 
     @Override
     public void render(SpriteBatch batch) {
         ScreenUtils.clear(backgroundColor);
 
+        var shapes = assets.shapes;
         batch.setProjectionMatrix(windowCamera.combined);
         batch.begin();
         {
             var wasHit = (timer > 0);
-            batch.setColor(wasHit ? ballColor : surfaceColor);
-            Util.draw(batch, ninePatch, bounds);
+
             batch.setColor(wasHit ? surfaceColor : ballColor);
             Util.draw(batch, texture, circle);
             batch.setColor(Color.WHITE);
+
+            scene.render(batch);
+            scene.render(shapes);
         }
         batch.end();
     }

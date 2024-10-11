@@ -8,11 +8,13 @@ import com.badlogic.gdx.utils.Disposable;
 import lando.systems.game.Config;
 import lando.systems.game.Main;
 import lando.systems.game.assets.Assets;
+import lando.systems.game.scene.Entities;
 
 public abstract class BaseScreen implements Disposable {
 
     public final Main game;
     public final Assets assets;
+    public final Entities entities;
     public final SpriteBatch batch;
     public final TweenManager tween;
     public final OrthographicCamera windowCamera;
@@ -24,6 +26,7 @@ public abstract class BaseScreen implements Disposable {
     public BaseScreen() {
         this.game = Main.game;
         this.assets = game.assets;
+        this.entities = game.entities;
         this.batch = game.assets.batch;
         this.tween = game.tween;
         this.windowCamera = game.windowCamera;

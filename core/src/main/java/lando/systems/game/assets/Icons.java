@@ -7,7 +7,7 @@ public class Icons extends AssetContainer<Icons.Type, TextureRegion> {
 
     private static final String folder = "icon/";
 
-    public enum Type implements AssetType<TextureRegion> {
+    public enum Type implements AssetEnum<TextureRegion> {
           CIRCLE_CHECK("circle-check")
         , CIRCLE_X("circle-x")
         , HEART("heart")
