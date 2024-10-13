@@ -9,12 +9,34 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.badlogic.gdx.utils.Pool;
+import com.badlogic.gdx.utils.Pools;
 import lando.systems.game.Config.Flag;
 
 import java.util.List;
 
 public class Util {
+
+    // ------------------------------------------------------------------------
+    // Object pools
+    // ------------------------------------------------------------------------
+
+    public static final Pool<Vector2> vec2 = Pools.get(Vector2.class, 500);
+    public static final Pool<Rectangle> rect = Pools.get(Rectangle.class, 500);
+
+    public static void free(Vector2... objects) {
+        for (var object : objects) {
+            Util.vec2.free(object);
+        }
+    }
+
+    public static void free(Rectangle... objects) {
+        for (var object : objects) {
+            Util.rect.free(object);
+        }
+    }
 
     // ------------------------------------------------------------------------
     // Logging related

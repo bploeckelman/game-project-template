@@ -1,4 +1,4 @@
-package lando.systems.game.utils;
+package lando.systems.game.math;
 
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;

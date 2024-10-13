@@ -45,18 +45,11 @@ public class Assets implements Disposable {
     public Assets(Load load) {
         prefs = Gdx.app.getPreferences(Config.preferences_name);
 
+        disposables = new Array<>();
         containers = new ObjectMap<>();
         containers.put(Icons.class, new Icons());
         containers.put(Patches.class, new Patches());
         containers.put(ScreenTransitions.class, new ScreenTransitions());
-
-        mgr = new AssetManager();
-        batch = new SpriteBatch();
-        shapes = new ShapeDrawer(batch);
-        layout = new GlyphLayout();
-        disposables = new Array<>();
-        disposables.add(mgr);
-        disposables.add(batch);
 
         // create a single pixel texture and associated region
         var pixmap = new Pixmap(2, 2, Pixmap.Format.RGBA8888);
@@ -72,6 +65,13 @@ public class Assets implements Disposable {
         }
         disposables.add(pixmap);
         disposables.add(pixel);
+
+        mgr = new AssetManager();
+        batch = new SpriteBatch();
+        shapes = new ShapeDrawer(batch, pixelRegion);
+        layout = new GlyphLayout();
+        disposables.add(mgr);
+        disposables.add(batch);
 
         // populate asset manager
         {

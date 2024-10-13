@@ -1,20 +1,29 @@
 package lando.systems.game.scene.components;
 
 import com.badlogic.gdx.math.Vector2;
-import lando.systems.game.scene.Component;
-import lando.systems.game.scene.Entity;
+import lando.systems.game.scene.framework.Component;
 
+// TODO(brian): use tettinger's gdcrux type here instead so we don't need to reimplement a bunch of the conversions
 public class Position extends Component {
+
+    private static final String TAG = Position.class.getSimpleName();
+
+    public static final Integer type = Component.NEXT_TYPE_ID++;
+    public static final Class<? extends Component> clazz = Position.class;
+    static {
+        TYPE_IDS.add(type);
+        TYPES.put(type, clazz);
+    }
 
     public final Vector2 value = new Vector2();
 
-    public Position(Entity entity, float x, float y) {
-        super(entity, Position.class);
+    public Position(float x, float y) {
+        super(type);
         this.value.set(x, y);
     }
 
-    public Position(Entity entity, Vector2 value) {
-        this(entity, value.x, value.y);
+    public Position(Vector2 value) {
+        this(value.x, value.y);
     }
 
     public float x() { return value.x; }

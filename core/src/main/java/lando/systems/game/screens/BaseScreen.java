@@ -8,7 +8,7 @@ import com.badlogic.gdx.utils.Disposable;
 import lando.systems.game.Config;
 import lando.systems.game.Main;
 import lando.systems.game.assets.Assets;
-import lando.systems.game.scene.Entities;
+import lando.systems.game.scene.framework.Entities;
 
 public abstract class BaseScreen implements Disposable {
 
