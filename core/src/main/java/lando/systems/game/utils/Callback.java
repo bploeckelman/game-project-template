@@ -3,23 +3,22 @@ package lando.systems.game.utils;
 @FunctionalInterface
 public interface Callback<T extends Callback.Params> {
 
-    interface Params {
-        void parse(Object... params);
+    interface Params {}
 
-        default boolean validate(int expectedNumParams, String implName, Object... params) {
-            if (params == null || params.length == expectedNumParams) {
-                int actualNumParams = 0;
-                if (params != null) {
-                    actualNumParams = params.length;
-                }
+    /**
+     * Primary {@link FunctionalInterface} callback method,
+     * accepting typed params for a specific usage
+     * by extending {@link Callback.Params}
+     */
+    void run(T params);
 
-                Util.log("%s callback params invalid, expected %d values, got %d"
-                    .formatted(implName, expectedNumParams, actualNumParams));
-                return false;
-            }
-            return true;
-        }
-    }
+    /**
+     * Optional no-arg callback function
+     */
+    default void run() {}
 
-    void run(Object... params);
+    /**
+     * Optional arbitrary-arg callback function
+     */
+    default void run(Object... params) {}
 }

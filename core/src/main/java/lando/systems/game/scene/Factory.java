@@ -35,25 +35,31 @@ public class Factory {
         var heartFull = assets.get(Icons.class, Icons.Type.HEART);
         var heartBroken = assets.get(Icons.class, Icons.Type.HEART_BROKEN);
         var image = new Image(heartFull);
-        image.bounds.setPosition(position.value);
+
+        var width = heartFull.getRegionWidth();
+        var height = heartFull.getRegionHeight();
+        var collider = Collider.makeRect(Collider.Mask.solid, -width / 2f, -height / 2f, width, height);
 
         var bouncer = new Bouncer(Collider.Mask.solid);
         bouncer.onHit = (params) -> {
-            var onHitParams = new Bouncer.OnHitParams(params);
-            var collidedWith = onHitParams.collidedWith;
-
-            // TODO(brian): figure out which direction to reflect relative to 'collidedWith'
-            //  for now just invert
-            mover.speed.scl(-1f);
-
-            // change the image, and change it back to normal after a bit
+            // change the image to indicate a hit
             image.region = heartBroken;
-            entity.attach(new Timer(0.3f, (onEnd) -> image.region = heartFull), Timer.type);
+
+            // change the image back to normal after a bit and self-destruct the timer
+            entity.attach(new Timer(0.3f, (onEnd) -> {
+                image.region = heartFull;
+                entity.destroy(Timer.type);
+            }), Timer.type);
+
+            // invert the mover's speed on whichever axis/axes hit a collider
+            if (params.xDir != null) mover.speed.x *= -1f;
+            if (params.yDir != null) mover.speed.y *= -1f;
         };
 
         entity.attach(position, Position.type);
         entity.attach(mover, Mover.type);
         entity.attach(image, Image.type);
+        entity.attach(collider, Collider.type);
         entity.attach(bouncer, Bouncer.type);
 
         return entity;
@@ -62,9 +68,10 @@ public class Factory {
     public static Entity boundary(float x, float y, float w, float h) {
         var entity = entities.create();
 
-        var position = new Position(x + w / 2, y + h / 2);
-        var collider = Collider.makeRect(Collider.Mask.solid, x, y, w, h);
-        var patch = new Patch(assets, Patches.Type.ROUNDED);
+        var position = new Position(x, y);
+        var collider = Collider.makeRect(Collider.Mask.solid, 0, 0, w, h);
+        var patch = new Patch(assets, Patches.Type.PLAIN);
+        patch.size.set(w, h);
 
         entity.attach(position, Position.type);
         entity.attach(collider, Collider.type);

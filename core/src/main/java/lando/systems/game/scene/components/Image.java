@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import lando.systems.game.scene.components.interfaces.RenderableComponent;
 import lando.systems.game.scene.framework.Component;
 import lando.systems.game.utils.Util;
@@ -21,19 +22,18 @@ public class Image extends Component implements RenderableComponent {
         TYPES.put(type, clazz);
     }
 
-    public final Rectangle bounds;
+    public final Vector2 size = new Vector2();
+    public final Vector2 origin = new Vector2();
+    public final Color tint = Color.WHITE.cpy();
 
-    public Position position;
     public TextureRegion region;
-    public Color tint;
+    public Position position;
 
     public Image(TextureRegion region) {
         super(type);
-        this.position = null;
         this.region = region;
-        this.tint = Color.WHITE.cpy();
-        this.bounds = new Rectangle();
-        this.bounds.setSize(region.getRegionWidth(), region.getRegionHeight());
+        this.position = null;
+        this.size.set(region.getRegionWidth(), region.getRegionHeight());
     }
 
     public Image(Texture texture) {
@@ -50,23 +50,31 @@ public class Image extends Component implements RenderableComponent {
         if (!active) return;
         if (region == null) return;
 
-        // TODO: troubleshooting left off here
-        var rect = Util.rect.obtain().set(bounds);
-        if (position != null && position.active) {
-            rect.x += position.x();
-            rect.y += position.y();
-        }
-
-        var original = batch.getColor();
-        batch.setColor(tint);
-        Util.draw(batch, region, rect);
-        batch.setColor(original);
-
+        var rect = getPooledRectBounds();
+        Util.draw(batch, region, rect, tint);
         Util.free(rect);
     }
 
     @Override
     public void render(ShapeDrawer shapes) {
-        shapes.rectangle(bounds, tint);
+        var rect = getPooledRectBounds();
+        shapes.rectangle(rect, tint);
+        Util.free(rect);
+    }
+
+    // NOTE: don't forget to free the returned object back to the pool!
+    private Rectangle getPooledRectBounds() {
+        float x = 0;
+        float y = 0;
+        if (position != null && position.active) {
+            x = position.x();
+            y = position.y();
+        }
+
+        return Util.rect.obtain().set(
+            x - origin.x,
+            y - origin.y,
+            size.x, size.y
+        );
     }
 }

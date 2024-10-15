@@ -29,7 +29,6 @@ public class Scene<ScreenType extends BaseScreen> {
         this.screen = screen;
         this.entities = screen.entities;
 
-        var assets = screen.assets;
         var camera = screen.worldCamera;
 
         var margin = 50f;
@@ -39,11 +38,12 @@ public class Scene<ScreenType extends BaseScreen> {
         var centerX = width / 2;
         var centerY = height / 2;
 
+        // TODO(brian): make position/origin/bounds usage uniform across components
         heart  = Factory.heart(centerX, centerY);
         left   = Factory.boundary(margin, margin, thickness, height - 2 * margin);
         right  = Factory.boundary(width - margin, margin, thickness, height - 2 * margin);
-        bottom = Factory.boundary(margin, margin, width - 2 * margin, thickness);
-        top    = Factory.boundary(margin, height - margin - thickness, width - 2 * margin, thickness);
+        bottom = Factory.boundary(margin + thickness, margin, width - 2 * margin - thickness, thickness);
+        top    = Factory.boundary(margin + thickness, height - margin - thickness, width - 2 * margin - thickness, thickness);
     }
 
     public void update(float dt) {

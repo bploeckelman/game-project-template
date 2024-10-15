@@ -35,9 +35,6 @@ public class Entities {
 
     // ------------------------------------------------------------------------
     // Entity operations
-    // TODO(brian): re-evaluate which methods are still needed
-    //  - eg. remove(entity) superseded by destroy(entity)
-    // TODO(brian): actually, we want remove and destroy, but they do different things
     // ------------------------------------------------------------------------
 
     /**
@@ -68,7 +65,7 @@ public class Entities {
         // remove any components of any type associated with this entity
         for (int i = 0; i < Component.TYPE_IDS.size; i++) {
             int componentTypeId = Component.TYPE_IDS.get(i);
-            entity.remove(componentTypeId);
+            entity.destroy(componentTypeId);
         }
 
         // remove the entity itself allowing it to be garbage collected
@@ -141,7 +138,7 @@ public class Entities {
      * @param component the {@link Component} to remove
      * @param componentTypeId the unique id of the component's concrete type
      */
-    public void removeComponent(Component component, int componentTypeId) {
+    public void destroyComponent(Component component, int componentTypeId) {
         if (component == null) {
             Util.log(TAG, "removeComponent(): component null, ignoring");
             return;

@@ -18,10 +18,7 @@ public class Timer extends Component {
 
     public Callback<Timer.OnEndParams> onEnd;
 
-    public static class OnEndParams implements Callback.Params {
-        @Override
-        public void parse(Object... params) {}
-    }
+    public static class OnEndParams implements Callback.Params {}
 
     public Timer() {
         super(type);
@@ -43,11 +40,11 @@ public class Timer extends Component {
     }
 
     public void update(float dt) {
-        if (duration > 0) {
-            duration -= dt;
-            if (duration <= 0 && onEnd != null) {
-                onEnd.run();
-            }
+        if (duration <= 0) return;
+
+        duration -= dt;
+        if (duration <= 0 && onEnd != null) {
+            onEnd.run();
         }
     }
 }

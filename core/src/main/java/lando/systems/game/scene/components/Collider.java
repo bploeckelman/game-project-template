@@ -120,6 +120,7 @@ public class Collider extends Component {
         Array<Collider> colliders = Main.game.entities.getComponents(Collider.type);
         for (var collider : colliders) {
             if (!collider.active) continue;
+            if (collider == this) continue;
             if (collider.mask != mask) continue;
 
             if (this.overlaps(collider, xOffset, yOffset)) {

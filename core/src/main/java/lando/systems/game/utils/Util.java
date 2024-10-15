@@ -141,34 +141,48 @@ public class Util {
     // Rectangle convenience methods ----------------------
 
     public static void draw(SpriteBatch batch, TextureRegion texture, Rectangle rect) {
-        draw(batch, texture, rect, 1f);
+        draw(batch, texture, rect, Color.WHITE);
     }
 
-    public static void draw(SpriteBatch batch, TextureRegion texture, Rectangle rect, float scale) {
-        draw(batch, texture, rect, 0f, 0f, scale, scale, 0f);
+    public static void draw(SpriteBatch batch, TextureRegion texture, Rectangle rect, Color tint) {
+        draw(batch, texture, rect, tint, 1f);
     }
 
-    public static void draw(SpriteBatch batch, TextureRegion texture, Rectangle rect, float ox, float oy, float sx, float sy, float rot) {
+    public static void draw(SpriteBatch batch, TextureRegion texture, Rectangle rect, Color tint, float scale) {
+        draw(batch, texture, rect, tint, 0f, 0f, scale, scale, 0f);
+    }
+
+    public static void draw(SpriteBatch batch, TextureRegion texture, Rectangle rect, Color tint, float ox, float oy, float sx, float sy, float rot) {
         var x = rect.x;
         var y = rect.y;
         var h = rect.height;
         var w = rect.width;
+        var color = batch.getColor();
+        batch.setColor(tint);
         batch.draw(texture, x, y, ox, oy, w, h, sx, sy, rot);
+        batch.setColor(color);
     }
 
     public static void draw(SpriteBatch batch, NinePatch ninePatch, Rectangle rect) {
-        draw(batch, ninePatch, rect, 1f);
+        draw(batch, ninePatch, rect, Color.WHITE);
     }
 
-    public static void draw(SpriteBatch batch, NinePatch ninePatch, Rectangle rect, float scale) {
-        draw(batch, ninePatch, rect, 0f, 0f, scale, scale, 0f);
+    public static void draw(SpriteBatch batch, NinePatch ninePatch, Rectangle rect, Color tint) {
+        draw(batch, ninePatch, rect, tint, 1f);
     }
 
-    public static void draw(SpriteBatch batch, NinePatch ninePatch, Rectangle rect, float ox, float oy, float sx, float sy, float rot) {
+    public static void draw(SpriteBatch batch, NinePatch ninePatch, Rectangle rect, Color tint, float scale) {
+        draw(batch, ninePatch, rect, tint, 0f, 0f, scale, scale, 0f);
+    }
+
+    public static void draw(SpriteBatch batch, NinePatch ninePatch, Rectangle rect, Color tint, float ox, float oy, float sx, float sy, float rot) {
         var x = rect.x;
         var y = rect.y;
         var h = rect.height;
         var w = rect.width;
+        var color = batch.getColor();
+        batch.setColor(tint);
         ninePatch.draw(batch, x, y, ox, oy, w, h, sx, sy, rot);
+        batch.setColor(color);
     }
 }
