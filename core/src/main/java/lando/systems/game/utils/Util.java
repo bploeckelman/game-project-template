@@ -145,11 +145,11 @@ public class Util {
     }
 
     public static void draw(SpriteBatch batch, TextureRegion texture, Rectangle rect, Color tint) {
-        draw(batch, texture, rect, tint, 1f);
+        draw(batch, texture, rect, tint, 1f, 1f);
     }
 
-    public static void draw(SpriteBatch batch, TextureRegion texture, Rectangle rect, Color tint, float scale) {
-        draw(batch, texture, rect, tint, 0f, 0f, scale, scale, 0f);
+    public static void draw(SpriteBatch batch, TextureRegion texture, Rectangle rect, Color tint, float scaleX, float scaleY) {
+        draw(batch, texture, rect, tint, 0f, 0f, scaleX, scaleY, 0f);
     }
 
     public static void draw(SpriteBatch batch, TextureRegion texture, Rectangle rect, Color tint, float ox, float oy, float sx, float sy, float rot) {

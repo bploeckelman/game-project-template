@@ -169,9 +169,12 @@ public class Collider extends Component {
             a.rect.y + aPos.y + yOffset,
             a.rect.width, a.rect.height);
 
+        // TODO(brian): need a way to indicate which (a or b) the offsets should apply to
+        //  so `overlapsRectCirc` behaves correctly when this.circ and that.rect
+        //  and we call it as: `overlapsRectCirc(other, this, ...)`
         bRect.set(
-            b.rect.x + bPos.x + xOffset,
-            b.rect.y + bPos.y + yOffset,
+            b.rect.x + bPos.x,
+            b.rect.y + bPos.y,
             b.rect.width, b.rect.height);
 
         var overlaps = aRect.overlaps(bRect);

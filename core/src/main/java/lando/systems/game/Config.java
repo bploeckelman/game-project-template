@@ -11,6 +11,8 @@ public class Config {
     public static final int framebuffer_width = window_width;
     public static final int framebuffer_height = window_height;
 
+    public static boolean stepped_frame = false;
+
     /**
      * Flags for enabling/disabling certain features, mostly used for debugging.
      * {@link Flag#GLOBAL} can be disabled to globally ignore any debug flag,

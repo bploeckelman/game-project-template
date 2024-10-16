@@ -3,6 +3,8 @@ package lando.systems.game.scene.components;
 import com.badlogic.gdx.math.Vector2;
 import lando.systems.game.math.Calc;
 import lando.systems.game.scene.framework.Component;
+import lando.systems.game.utils.Callback;
+import lando.systems.game.utils.Direction;
 
 public class Mover extends Component {
 
@@ -19,14 +21,24 @@ public class Mover extends Component {
 
     public Position position;
     public Collider collider;
+    public Callback<OnHitParams> onHitX;
+    public Callback<OnHitParams> onHitY;
+
     public Vector2 speed;
     public float gravity;
     public float friction;
+
+    public record OnHitParams(
+        Collider hitCollider,
+        Direction.Relative direction)
+    implements Callback.Params {}
 
     public Mover() {
         super(type);
         this.position = null;
         this.collider = null;
+        this.onHitX = null;
+        this.onHitY = null;
         this.speed = new Vector2();
         this.gravity = 0f;
         this.friction = 0f;
@@ -36,6 +48,9 @@ public class Mover extends Component {
         // need a position to be moved
         position = entity.get(Position.type);
         if (position == null) return;
+
+        // update the currently attached collider
+        collider = entity.get(Collider.type);
 
         // apply friction, maybe
         if (friction > 0 && onGround()) {
@@ -87,13 +102,19 @@ public class Mover extends Component {
         if (collider == null) {
             position.value.x += amount;
         } else {
-            // for each pixel, if moving there wouldn't collide then move, otherwise stop
+            // for each pixel, if moving there wouldn't collide then move,
+            // otherwise run onHit callback or stop if no callback is set
             var sign = Calc.sign(amount);
 
             while (amount != 0) {
-                var isSolid = collider.check(Collider.Mask.solid, sign, 0);
-                if (isSolid) {
-                    stopX();
+                var hitCollider = collider.checkAndGet(Collider.Mask.solid, sign, 0);
+                if (hitCollider != null) {
+                    if (onHitX != null) {
+                        var onHitParams = new OnHitParams(hitCollider, Direction.Relative.from(sign, Direction.Axis.X));
+                        onHitX.run(onHitParams);
+                    } else {
+                        stopX();
+                    }
                     return true;
                 }
 
@@ -109,13 +130,19 @@ public class Mover extends Component {
         if (collider == null) {
             position.value.y += amount;
         } else {
-            // for each pixel, if moving there wouldn't collide then move, otherwise stop
+            // for each pixel, if moving there wouldn't collide then move,
+            // otherwise run onHit callback or stop if no callback is set
             var sign = Calc.sign(amount);
 
             while (amount != 0) {
-                var isSolid = collider.check(Collider.Mask.solid, 0, sign);
-                if (isSolid) {
-                    stopY();
+                Collider hitCollider = collider.checkAndGet(Collider.Mask.solid, 0, sign);
+                if (hitCollider != null) {
+                    if (onHitY != null) {
+                        var onHitParams = new OnHitParams(collider, Direction.Relative.from(sign, Direction.Axis.Y));
+                        onHitY.run(onHitParams);
+                    } else {
+                        stopY();
+                    }
                     return true;
                 }
 

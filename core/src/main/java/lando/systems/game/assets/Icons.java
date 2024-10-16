@@ -8,10 +8,15 @@ public class Icons extends AssetContainer<Icons.Type, TextureRegion> {
     private static final String folder = "icon/";
 
     public enum Type implements AssetEnum<TextureRegion> {
-          CIRCLE_CHECK("circle-check")
+          CARD_STACK("card-stack")
+        , CIRCLE_CHECK("circle-check")
         , CIRCLE_X("circle-x")
         , HEART("heart")
         , HEART_BROKEN("heart-broken")
+        , NOTEPAD("notepad")
+        , PERSON_PLAY("person-play")
+        , PERSON_X("person-x")
+        , PUZZLE("puzzle")
         ;
 
         private final String regionName;

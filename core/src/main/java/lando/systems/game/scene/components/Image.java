@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import lando.systems.game.math.Calc;
 import lando.systems.game.scene.components.interfaces.RenderableComponent;
 import lando.systems.game.scene.framework.Component;
 import lando.systems.game.utils.Util;
@@ -24,6 +25,8 @@ public class Image extends Component implements RenderableComponent {
 
     public final Vector2 size = new Vector2();
     public final Vector2 origin = new Vector2();
+    public final Vector2 defaultScale = new Vector2(1, 1);
+    public final Vector2 scale = defaultScale.cpy();
     public final Color tint = Color.WHITE.cpy();
 
     public TextureRegion region;
@@ -43,15 +46,17 @@ public class Image extends Component implements RenderableComponent {
     @Override
     public void update(float dt) {
         position = entity.get(Position.type);
+
+        scale.x = Calc.approach(Calc.abs(scale.x), defaultScale.x, dt * 4);
+        scale.y = Calc.approach(Calc.abs(scale.y), defaultScale.y, dt * 4);
     }
 
     @Override
     public void render(SpriteBatch batch) {
-        if (!active) return;
         if (region == null) return;
 
         var rect = getPooledRectBounds();
-        Util.draw(batch, region, rect, tint);
+        Util.draw(batch, region, rect, tint, scale.x, scale.y);
         Util.free(rect);
     }
 

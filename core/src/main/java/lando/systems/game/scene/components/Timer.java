@@ -39,12 +39,13 @@ public class Timer extends Component {
         this.duration = duration;
     }
 
+    @Override
     public void update(float dt) {
-        if (duration <= 0) return;
-
-        duration -= dt;
-        if (duration <= 0 && onEnd != null) {
-            onEnd.run();
+        if (duration > 0) {
+            duration -= dt;
+            if (duration <= 0 && onEnd != null) {
+                onEnd.run(new OnEndParams());
+            }
         }
     }
 }

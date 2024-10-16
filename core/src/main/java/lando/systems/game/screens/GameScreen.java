@@ -3,108 +3,31 @@ package lando.systems.game.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Circle;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ScreenUtils;
+import lando.systems.game.Config;
 import lando.systems.game.assets.Icons;
-import lando.systems.game.assets.Patches;
 import lando.systems.game.scene.Scene;
 import lando.systems.game.utils.Util;
 
 public class GameScreen extends BaseScreen {
 
-    private final Circle circle = new Circle();
-    private final Vector2 vel = new Vector2();
-    private final Rectangle bounds = new Rectangle();
-
     private final Color backgroundColor = new Color(0x131711ff);
-    private final Color surfaceColor = new Color(0x282c27ff);
-    private final Color ballColor = new Color(0x004000ff);
-    private final TextureRegion okTexture;
-    private final TextureRegion hitTexture;
-    private final NinePatch ninePatch;
 
     private final Scene<GameScreen> scene;
 
-    private TextureRegion texture;
-    private float timer;
-
     public GameScreen() {
-        var margin = 50f;
-        var radius = 50f;
-        var centerX = windowCamera.viewportWidth / 2;
-        var centerY = windowCamera.viewportHeight / 2;
-        var speed = MathUtils.random(300f, 500f);
-        var angle = MathUtils.random(0f, 360f);
-        circle.set(centerX, centerY, radius);
-        vel.set(MathUtils.cosDeg(angle) * speed, MathUtils.sinDeg(angle) * speed);
-        bounds.set(margin, margin, windowCamera.viewportWidth - 2 * margin, windowCamera.viewportHeight - 2 * margin);
-
-        var icons = assets.get(Icons.class);
-        okTexture = icons.get(Icons.Type.CIRCLE_CHECK);
-        hitTexture = icons.get(Icons.Type.CIRCLE_X);
-        var patches = assets.get(Patches.class);
-        ninePatch = patches.get(Patches.Type.ROUNDED);
-
-        texture = okTexture;
-        timer = 0f;
-
         this.scene = new Scene<>(this);
     }
 
     @Override
     public void update(float dt) {
-        var shouldExit = Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE);
-        var shouldQuit = shouldExit && Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT);
-        if (shouldQuit) {
-            Gdx.app.exit();
-        } else if (shouldExit && !exiting) {
-            game.setScreen(new TitleScreen());
-        }
+        handleExit();
 
-        timer -= dt;
-        if (timer <= 0f) {
-            timer = 0f;
-            texture = okTexture;
-        }
-
-        circle.x += vel.x * dt;
-        circle.y += vel.y * dt;
-
-        var left   = circle.x - circle.radius;
-        var bottom = circle.y - circle.radius;
-        var right  = circle.x + circle.radius;
-        var top    = circle.y + circle.radius;
-
-        var hit = false;
-        if (left < bounds.x) {
-            hit = true;
-            vel.x *= -1f;
-            circle.x = bounds.x + circle.radius;
-        } else if (right > bounds.x + bounds.width) {
-            hit = true;
-            vel.x *= -1f;
-            circle.x = (bounds.x + bounds.width) - circle.radius;
-        }
-
-        if (bottom < bounds.y) {
-            hit = true;
-            vel.y *= -1f;
-            circle.y = bounds.y + circle.radius;
-        } else if (top > bounds.y + bounds.height) {
-            hit = true;
-            vel.y *= -1f;
-            circle.y = (bounds.y + bounds.height) - circle.radius;
-        }
-
-        if (hit) {
-            timer = 0.25f;
-            texture = hitTexture;
+        var shouldSkipFrame = handleDebugFlags();
+        if (shouldSkipFrame) {
+            return;
         }
 
         scene.update(dt);
@@ -115,18 +38,122 @@ public class GameScreen extends BaseScreen {
         ScreenUtils.clear(backgroundColor);
 
         var shapes = assets.shapes;
-        batch.setProjectionMatrix(windowCamera.combined);
+        batch.setProjectionMatrix(worldCamera.combined);
         batch.begin();
         {
-            var wasHit = (timer > 0);
-
-            batch.setColor(wasHit ? surfaceColor : ballColor);
-            Util.draw(batch, texture, circle);
-            batch.setColor(Color.WHITE);
-
             scene.render(batch);
             scene.render(shapes);
         }
         batch.end();
+
+        batch.setProjectionMatrix(windowCamera.combined);
+        batch.begin();
+        {
+            if (Config.Flag.GLOBAL.isEnabled()) {
+                renderConfigFlagIcons();
+            }
+        }
+        batch.end();
+    }
+
+    private void handleExit() {
+        var shouldExit = Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE);
+        var shouldQuit = shouldExit && Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT);
+        if (shouldQuit) {
+            Gdx.app.exit();
+        } else if (shouldExit && !exiting) {
+            game.setScreen(new TitleScreen());
+        }
+    }
+
+    private boolean handleDebugFlags() {
+        var toggleGlobal = Gdx.input.isKeyJustPressed(Input.Keys.NUM_1);
+        if (toggleGlobal) {
+            Config.Flag.GLOBAL.toggle();
+        }
+
+        var toggleRender = Gdx.input.isKeyJustPressed(Input.Keys.NUM_2);
+        if (toggleRender) {
+            Config.Flag.RENDER.toggle();
+        }
+
+        var toggleUI = Gdx.input.isKeyJustPressed(Input.Keys.NUM_3);
+        if (toggleUI) {
+            Config.Flag.UI.toggle();
+        }
+
+        var toggleLog = Gdx.input.isKeyJustPressed(Input.Keys.NUM_4);
+        if (toggleLog) {
+            Config.Flag.UI.toggle();
+        }
+
+        var toggleFrameStep = Gdx.input.isKeyJustPressed(Input.Keys.NUM_0);
+        if (toggleFrameStep) {
+            Config.Flag.FRAME_STEP.toggle();
+        }
+
+        if (Config.Flag.FRAME_STEP.isEnabled()) {
+            Config.stepped_frame = Gdx.input.isKeyJustPressed(Input.Keys.NUM_9);
+            return !Config.stepped_frame;
+        }
+        return false;
+    }
+
+    private void renderConfigFlagIcons() {
+        float size = 32f;
+        float margin = 20f;
+        float x = 0;
+        float y = windowCamera.viewportHeight - margin - size;
+
+        Color iconTint;
+        Icons.Type iconType;
+        TextureRegion icon;
+
+        var rect = Util.rect.obtain();
+        if (Config.Flag.FRAME_STEP.isEnabled()) {
+            x += margin + size;
+            rect.set(x, y, size, size);
+
+            iconTint = Config.stepped_frame ? Color.LIME : Color.ORANGE;
+            iconType = Config.stepped_frame ? Icons.Type.PERSON_PLAY : Icons.Type.PERSON_X;
+            icon = assets.get(Icons.class, iconType);
+            Util.draw(batch, icon, rect, iconTint);
+        } else {
+            x += margin + size;
+            rect.set(x, y, size, size);
+
+            iconTint = Color.LIME;
+            iconType = Icons.Type.PERSON_PLAY;
+            icon = assets.get(Icons.class, iconType);
+            Util.draw(batch, icon, rect, iconTint);
+        }
+        if (Config.Flag.RENDER.isEnabled()) {
+            x += margin + size;
+            rect.set(x, y, size, size);
+
+            iconTint = Color.SCARLET;
+            iconType = Icons.Type.CARD_STACK;
+            icon = assets.get(Icons.class, iconType);
+            Util.draw(batch, icon, rect, iconTint);
+        }
+        if (Config.Flag.UI.isEnabled()) {
+            x += margin + size;
+            rect.set(x, y, size, size);
+
+            iconTint = Color.CYAN;
+            iconType = Icons.Type.PUZZLE;
+            icon = assets.get(Icons.class, iconType);
+            Util.draw(batch, icon, rect, iconTint);
+        }
+        if (Config.Flag.LOG.isEnabled()) {
+            x += margin + size;
+            rect.set(x, y, size, size);
+
+            iconTint = Color.GOLDENROD;
+            iconType = Icons.Type.NOTEPAD;
+            icon = assets.get(Icons.class, iconType);
+            Util.draw(batch, icon, rect, iconTint);
+        }
+        Util.free(rect);
     }
 }

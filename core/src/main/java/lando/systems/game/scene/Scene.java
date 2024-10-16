@@ -5,6 +5,7 @@ import com.badlogic.gdx.utils.Array;
 import lando.systems.game.scene.components.Image;
 import lando.systems.game.scene.components.Patch;
 import lando.systems.game.scene.components.interfaces.RenderableComponent;
+import lando.systems.game.scene.framework.Component;
 import lando.systems.game.scene.framework.Entities;
 import lando.systems.game.scene.framework.Entity;
 import lando.systems.game.screens.BaseScreen;
@@ -41,9 +42,9 @@ public class Scene<ScreenType extends BaseScreen> {
         // TODO(brian): make position/origin/bounds usage uniform across components
         heart  = Factory.heart(centerX, centerY);
         left   = Factory.boundary(margin, margin, thickness, height - 2 * margin);
-        right  = Factory.boundary(width - margin, margin, thickness, height - 2 * margin);
-        bottom = Factory.boundary(margin + thickness, margin, width - 2 * margin - thickness, thickness);
-        top    = Factory.boundary(margin + thickness, height - margin - thickness, width - 2 * margin - thickness, thickness);
+        right  = Factory.boundary(width - margin - thickness, margin, thickness, height - 2 * margin);
+        bottom = Factory.boundary(margin + thickness, margin, width - 2 * margin - 2 * thickness, thickness);
+        top    = Factory.boundary(margin + thickness, height - margin - thickness, width - 2 * margin - 2 * thickness, thickness);
     }
 
     public void update(float dt) {
@@ -57,10 +58,20 @@ public class Scene<ScreenType extends BaseScreen> {
     }
 
     public void render(SpriteBatch batch) {
-        renderables.forEach(it -> it.render(batch));
+        renderables.forEach(it -> {
+            var component = (Component) it;
+            if (component.active) {
+                it.render(batch);
+            }
+        });
     }
 
     public void render(ShapeDrawer shapes) {
-        renderables.forEach(it -> it.render(shapes));
+        renderables.forEach(it -> {
+            var component = (Component) it;
+            if (component.active) {
+                it.render(shapes);
+            }
+        });
     }
 }
