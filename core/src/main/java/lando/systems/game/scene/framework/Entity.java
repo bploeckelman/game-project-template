@@ -2,7 +2,6 @@ package lando.systems.game.scene.framework;
 
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.IntMap;
-import lando.systems.game.Main;
 import lando.systems.game.utils.Util;
 
 public class Entity {
@@ -22,8 +21,8 @@ public class Entity {
      * Each {@link Entity} holds references to its attached {@link Component} instances
      * for ease of lookup from other attached components to enable interaction.
      * These should be considered 'weak' references, as the primary container
-     * for all components is in {@link Entities}. The {@code int key} for this map
-     * and for the global map in {@code Entities.componentsMap} is the concrete
+     * for all components is in {@link World}. The {@code int key} for this map
+     * and for the global map in {@code World.componentsMap} is the concrete
      * {@link Component} sub-class {@code MyComponent.type} field.
      * See the comment in {@link Component} for details on how to create new component types.
      */
@@ -41,7 +40,7 @@ public class Entity {
 
     /**
      * Constructor has package-private visibility
-     * limiting creation to {@link Entities#create()}
+     * limiting creation to {@link World#create()}
      */
     Entity() {
         this.id = NEXT_ID++;
@@ -130,7 +129,7 @@ public class Entity {
         var existing = detach(componentTypeId);
         if (existing != null) {
             existing.entity = NONE;
-            Main.game.entities.destroyComponent(existing, componentTypeId);
+            World.components.destroy(existing, componentTypeId);
         }
     }
 
@@ -144,7 +143,7 @@ public class Entity {
         for (int i = keys.size - 1; i >= 0; i--) {
             var componentTypeId = keys.get(i);
             var component = detach(componentTypeId);
-            Main.game.entities.destroyComponent(component, componentTypeId);
+            World.components.destroy(component, componentTypeId);
         }
         componentMap.clear();
     }

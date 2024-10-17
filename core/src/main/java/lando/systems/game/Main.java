@@ -18,7 +18,6 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import lando.systems.game.assets.Assets;
 import lando.systems.game.assets.ScreenTransitions;
 import lando.systems.game.scene.Factory;
-import lando.systems.game.scene.framework.Entities;
 import lando.systems.game.screens.BaseScreen;
 import lando.systems.game.screens.GameScreen;
 import lando.systems.game.screens.TitleScreen;
@@ -37,7 +36,6 @@ public class Main extends ApplicationAdapter {
     public static Main game;
 
     public Assets assets;
-    public Entities entities;
     public TweenManager tween;
     public FrameBuffer frameBuffer;
     public TextureRegion frameBufferRegion;
@@ -55,9 +53,7 @@ public class Main extends ApplicationAdapter {
 
         assets = new Assets();
         Transition.init(assets);
-
-        entities = new Entities();
-        Factory.init(assets, entities);
+        Factory.init(assets);
 
         tween = new TweenManager();
         Tween.setWaypointsLimit(4);

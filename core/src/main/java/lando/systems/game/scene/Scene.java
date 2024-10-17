@@ -6,15 +6,20 @@ import lando.systems.game.scene.components.Image;
 import lando.systems.game.scene.components.Patch;
 import lando.systems.game.scene.components.interfaces.RenderableComponent;
 import lando.systems.game.scene.framework.Component;
-import lando.systems.game.scene.framework.Entities;
 import lando.systems.game.scene.framework.Entity;
+import lando.systems.game.scene.framework.World;
 import lando.systems.game.screens.BaseScreen;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
+/**
+ * An arrangement of {@link Entity} instances from an associated {@link World},
+ * setup for them to be created and interact in a particular way to produce
+ * a given gameplay or narrative form.
+ */
 public class Scene<ScreenType extends BaseScreen> {
 
     public final ScreenType screen;
-    public final Entities entities;
+    public final World world;
 
     public final Entity heart;
 
@@ -28,12 +33,11 @@ public class Scene<ScreenType extends BaseScreen> {
 
     public Scene(ScreenType screen) {
         this.screen = screen;
-        this.entities = screen.entities;
-
-        var camera = screen.worldCamera;
+        this.world = screen.world;
 
         var margin = 50f;
         var thickness = 20f;
+        var camera = screen.worldCamera;
         var width = camera.viewportWidth;
         var height = camera.viewportHeight;
         var centerX = width / 2;
@@ -48,10 +52,10 @@ public class Scene<ScreenType extends BaseScreen> {
     }
 
     public void update(float dt) {
-        entities.update(dt);
+        world.update(dt);
 
-        Array<Image> images = entities.getComponents(Image.type);
-        Array<Patch> patches = entities.getComponents(Patch.type);
+        Array<Image> images = world.getAll(Image.type);
+        Array<Patch> patches = world.getAll(Patch.type);
         renderables.clear();
         renderables.addAll(images);
         renderables.addAll(patches);

@@ -3,8 +3,8 @@ package lando.systems.game.scene.components;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
-import lando.systems.game.Main;
 import lando.systems.game.scene.framework.Component;
+import lando.systems.game.scene.framework.World;
 import lando.systems.game.utils.Util;
 
 public class Collider extends Component {
@@ -117,7 +117,7 @@ public class Collider extends Component {
     }
 
     public Collider checkAndGet(Mask mask, int xOffset, int yOffset) {
-        Array<Collider> colliders = Main.game.entities.getComponents(Collider.type);
+        Array<Collider> colliders = World.components.getAll(Collider.type);
         for (var collider : colliders) {
             if (!collider.active) continue;
             if (collider == this) continue;

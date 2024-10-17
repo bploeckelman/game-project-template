@@ -11,22 +11,20 @@ import lando.systems.game.scene.components.Mover;
 import lando.systems.game.scene.components.Patch;
 import lando.systems.game.scene.components.Position;
 import lando.systems.game.scene.components.Timer;
-import lando.systems.game.scene.framework.Entities;
 import lando.systems.game.scene.framework.Entity;
+import lando.systems.game.scene.framework.World;
 import lando.systems.game.utils.Callback;
 
 public class Factory {
 
     private static Assets assets;
-    private static Entities entities;
 
-    public static void init(Assets assets, Entities entities) {
+    public static void init(Assets assets) {
         Factory.assets = assets;
-        Factory.entities = entities;
     }
 
     public static Entity heart(float x, float y) {
-        var entity = entities.create();
+        var entity = World.entities.create();
 
         var position = new Position(x, y);
 
@@ -98,7 +96,7 @@ public class Factory {
     }
 
     public static Entity boundary(float x, float y, float w, float h) {
-        var entity = entities.create();
+        var entity = World.entities.create();
 
         var position = new Position(x, y);
         var collider = Collider.makeRect(Collider.Mask.solid, 0, 0, w, h);

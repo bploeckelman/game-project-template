@@ -2,8 +2,6 @@ package lando.systems.game.scene.framework;
 
 import com.badlogic.gdx.utils.IntArray;
 import com.badlogic.gdx.utils.IntMap;
-import lando.systems.game.Main;
-import lando.systems.game.utils.Util;
 
 public abstract class Component {
 
@@ -44,7 +42,7 @@ public abstract class Component {
     public Component(int componentTypeId) {
         this.entity = Entity.NONE;
         this.active = true;
-        Main.game.entities.addComponent(this, componentTypeId);
+        World.components.add(this, componentTypeId);
     }
 
     public void update(float dt) {}
