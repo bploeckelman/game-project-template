@@ -41,8 +41,7 @@ public class Factory {
         var collider = Collider.makeRect(Collider.Mask.solid, -width / 2f, -height / 2f, width, height);
 
         var mover = new Mover();
-
-        var speed = MathUtils.random(500, 800);
+        var speed = MathUtils.random(300, 500);
         mover.speed.setToRandomDirection().scl(speed);
 
         var onHit = (Callbacks.TypedArg<Mover.OnHitParams>) (params) -> {

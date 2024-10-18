@@ -7,7 +7,9 @@ import lando.systems.game.utils.Util;
 import java.util.Optional;
 
 /**
- * Container for {@link Entity} and {@link Component} instances
+ * Container for {@link Entity} and {@link Component} instances.
+ * Operations on entities and components can be globally accessed via the
+ * facade implementations: {@link World#entities} and {@link World#components}.
  */
 public class World implements EntityFacade, ComponentFacade {
 
@@ -42,6 +44,7 @@ public class World implements EntityFacade, ComponentFacade {
 
     /**
      * Lookup an entity by id
+     *
      * @param id the integer id of the requested entity
      * @return optional containing the entity instance if found, empty optional otherwise
      */
@@ -109,6 +112,7 @@ public class World implements EntityFacade, ComponentFacade {
 
     /**
      * Get all components of the specified type
+     *
      * @param componentTypeId the unique id of the {@link Component} type of the components to retrieve
      * @return non-null array containing all components of the given type, if any
      */
@@ -127,7 +131,8 @@ public class World implements EntityFacade, ComponentFacade {
 
     /**
      * Add a new component to the global collection, keyed by type
-     * @param component the {@link Component} to add
+     *
+     * @param component       the {@link Component} to add
      * @param componentTypeId the unique id of the {@link Component} type of the component to add
      */
     @Override
@@ -143,7 +148,8 @@ public class World implements EntityFacade, ComponentFacade {
 
     /**
      * Remove the specified component from the global collection, if they're in it
-     * @param component the {@link Component} to remove
+     *
+     * @param component       the {@link Component} to remove
      * @param componentTypeId the unique id of the component's concrete type
      */
     @Override
