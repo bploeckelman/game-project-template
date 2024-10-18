@@ -1,7 +1,7 @@
 package lando.systems.game.scene.components;
 
 import lando.systems.game.scene.framework.Component;
-import lando.systems.game.utils.Callback;
+import lando.systems.game.utils.Callbacks;
 
 public class Timer extends Component {
 
@@ -16,9 +16,7 @@ public class Timer extends Component {
 
     private float duration;
 
-    public Callback<Timer.OnEndParams> onEnd;
-
-    public static class OnEndParams implements Callback.Params {}
+    public Callbacks.NoArg onEnd;
 
     public Timer() {
         super(type);
@@ -29,7 +27,7 @@ public class Timer extends Component {
         start(duration);
     }
 
-    public Timer(float duration, Callback<Timer.OnEndParams> onEnd) {
+    public Timer(float duration, Callbacks.NoArg onEnd) {
         super(type);
         this.onEnd = onEnd;
         start(duration);
@@ -44,7 +42,7 @@ public class Timer extends Component {
         if (duration > 0) {
             duration -= dt;
             if (duration <= 0 && onEnd != null) {
-                onEnd.run(new OnEndParams());
+                onEnd.run();
             }
         }
     }

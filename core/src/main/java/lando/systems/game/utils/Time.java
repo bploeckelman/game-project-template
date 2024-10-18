@@ -8,14 +8,14 @@ import lando.systems.game.math.Calc;
 public class Time {
 
     private static class CallbackInfo {
-        private final Callback callback;
+        private final Callbacks.VarArg callback;
         private final Object[] params;
         private float timer;
 
         public float timeout = 0;
         public float interval = 0;
 
-        CallbackInfo(Callback callback, Object... params) {
+        CallbackInfo(Callbacks.VarArg callback, Object... params) {
             this.callback = callback;
             this.params = params;
             this.timer = 0;
@@ -81,13 +81,13 @@ public class Time {
         }
     }
 
-    public static void do_after_delay(float seconds, Callback callback) {
+    public static void do_after_delay(float seconds, Callbacks.VarArg callback) {
         CallbackInfo info = new CallbackInfo(callback);
         info.timeout = seconds;
         callbacks.add(info);
     }
 
-    public static void do_at_interval(float seconds, Callback callback) {
+    public static void do_at_interval(float seconds, Callbacks.VarArg callback) {
         CallbackInfo info = new CallbackInfo(callback);
         info.interval = seconds;
         callbacks.add(info);

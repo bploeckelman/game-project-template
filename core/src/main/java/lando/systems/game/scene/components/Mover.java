@@ -3,7 +3,7 @@ package lando.systems.game.scene.components;
 import com.badlogic.gdx.math.Vector2;
 import lando.systems.game.math.Calc;
 import lando.systems.game.scene.framework.Component;
-import lando.systems.game.utils.Callback;
+import lando.systems.game.utils.Callbacks;
 import lando.systems.game.utils.Direction;
 
 public class Mover extends Component {
@@ -12,6 +12,7 @@ public class Mover extends Component {
 
     public static final Integer type = Component.NEXT_TYPE_ID++;
     public static final Class<? extends Component> clazz = Mover.class;
+
     static {
         TYPE_IDS.add(type);
         TYPES.put(type, clazz);
@@ -21,8 +22,8 @@ public class Mover extends Component {
 
     public Position position;
     public Collider collider;
-    public Callback<OnHitParams> onHitX;
-    public Callback<OnHitParams> onHitY;
+    public Callbacks.TypedArg<OnHitParams> onHitX;
+    public Callbacks.TypedArg<OnHitParams> onHitY;
 
     public Vector2 speed;
     public float gravity;
@@ -31,7 +32,8 @@ public class Mover extends Component {
     public record OnHitParams(
         Collider hitCollider,
         Direction.Relative direction)
-    implements Callback.Params {}
+        implements Callbacks.TypedArg.Params {
+    }
 
     public Mover() {
         super(type);

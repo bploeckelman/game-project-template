@@ -13,7 +13,7 @@ import lando.systems.game.scene.components.Position;
 import lando.systems.game.scene.components.Timer;
 import lando.systems.game.scene.framework.Entity;
 import lando.systems.game.scene.framework.World;
-import lando.systems.game.utils.Callback;
+import lando.systems.game.utils.Callbacks;
 
 public class Factory {
 
@@ -45,7 +45,7 @@ public class Factory {
         var speed = MathUtils.random(500, 800);
         mover.speed.setToRandomDirection().scl(speed);
 
-        var onHit = (Callback<Mover.OnHitParams>) (params) -> {
+        var onHit = (Callbacks.TypedArg<Mover.OnHitParams>) (params) -> {
             // change the image/tint to indicate a hit
             image.region = heartBroken;
             image.tint.set(tintBroken);
@@ -55,7 +55,7 @@ public class Factory {
             var timer = (Timer) entity.get(Timer.type);
             if (timer == null) {
                 // no active timer, create and attach one
-                entity.attach(new Timer(hitDuration, (onEnd) -> {
+                entity.attach(new Timer(hitDuration, () -> {
                     image.region = heartFull;
                     image.tint.set(tintFull);
                     entity.destroy(Timer.type);
@@ -75,13 +75,15 @@ public class Factory {
                     mover.stopX();
                     mover.speed.x = newSpeedX;
                     image.scale.set(0.66f, 1.33f);
-                } break;
+                }
+                break;
                 case UP, DOWN: {
                     float newSpeedY = -mover.speed.y;
                     mover.stopY();
                     mover.speed.y = newSpeedY;
                     image.scale.set(1.33f, 0.66f);
-                } break;
+                }
+                break;
             }
         };
         mover.onHitX = onHit;
