@@ -126,22 +126,25 @@ public class Util {
     // ------------------------------------------------------------------------
     // Drawing related
     // ------------------------------------------------------------------------
+    private static final Color prevColor = Color.WHITE.cpy();
 
     // Circle convenience methods -------------------------
 
-    public static void draw(SpriteBatch batch, TextureRegion texture, Circle circle) {
-        draw(batch, texture, circle, 1f);
+    public static void draw(SpriteBatch batch, TextureRegion texture, Circle circle, Color tint) {
+        draw(batch, texture, circle, tint, 1f);
     }
 
-    public static void draw(SpriteBatch batch, TextureRegion texture, Circle circle, float scale) {
+    public static void draw(SpriteBatch batch, TextureRegion texture, Circle circle, Color tint, float scale) {
         var x = circle.x;
         var y = circle.y;
         var r = circle.radius * scale;
+        prevColor.set(batch.getColor());
+        batch.setColor(tint);
         batch.draw(texture, x - r, y - r, 2 * r, 2 * r);
+        batch.setColor(prevColor);
     }
 
     // Rectangle convenience methods ----------------------
-    private static final Color prevColor = Color.WHITE.cpy();
 
     public static void draw(SpriteBatch batch, TextureRegion texture, Rectangle rect) {
         draw(batch, texture, rect, Color.WHITE);
@@ -152,7 +155,7 @@ public class Util {
     }
 
     public static void draw(SpriteBatch batch, TextureRegion texture, Rectangle rect, Color tint, float scaleX, float scaleY) {
-        draw(batch, texture, rect, tint, 0f, 0f, scaleX, scaleY, 0f);
+        draw(batch, texture, rect, tint, rect.width / 2f, rect.height / 2f, scaleX, scaleY, 0f);
     }
 
     public static void draw(SpriteBatch batch, TextureRegion texture, Rectangle rect, Color tint, float ox, float oy, float sx, float sy, float rot) {
@@ -175,7 +178,7 @@ public class Util {
     }
 
     public static void draw(SpriteBatch batch, NinePatch ninePatch, Rectangle rect, Color tint, float scale) {
-        draw(batch, ninePatch, rect, tint, 0f, 0f, scale, scale, 0f);
+        draw(batch, ninePatch, rect, tint, rect.width / 2f, rect.height / 2f, scale, scale, 0f);
     }
 
     public static void draw(SpriteBatch batch, NinePatch ninePatch, Rectangle rect, Color tint, float ox, float oy, float sx, float sy, float rot) {

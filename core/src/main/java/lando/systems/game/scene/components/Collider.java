@@ -108,8 +108,8 @@ public class Collider extends Component {
     public Collider checkAndGet(Mask mask, int xOffset, int yOffset) {
         var colliders = World.components.getComponents(Collider.class);
         for (var collider : colliders) {
-            if (!collider.active) continue;
             if (collider == this) continue;
+            if (collider.notActive()) continue;
             if (collider.mask != mask) continue;
 
             if (this.overlaps(collider, xOffset, yOffset)) {

@@ -56,16 +56,25 @@ public class Factory {
                 timer.start(hitDuration);
             }
 
+            var hitEntity = params.hitCollider().entity;
+            var hitPatch = hitEntity.getIfActive(Patch.class);
+
             // invert speed on the hit axis
             switch (params.direction()) {
                 case LEFT, RIGHT: {
                     mover.invertX();
                     image.scale.set(0.66f, 1.33f);
+                    if (hitPatch != null) {
+                        hitPatch.scale.set(1.33f, 1f);
+                    }
                 }
                 break;
                 case UP, DOWN: {
                     mover.invertY();
                     image.scale.set(1.33f, 0.66f);
+                    if (hitPatch != null) {
+                        hitPatch.scale.set(1f, 1.33f);
+                    }
                 }
                 break;
             }
@@ -86,9 +95,12 @@ public class Factory {
     public static Entity boundary(float x, float y, float w, float h) {
         var entity = World.entities.create();
 
-        var position = new Position(x, y);
-        var collider = Collider.makeRect(Collider.Mask.solid, 0, 0, w, h);
+        var halfWidth = w / 2f;
+        var halfHeight = h / 2f;
+        var position = new Position(x + halfWidth, y + halfHeight);
+        var collider = Collider.makeRect(Collider.Mask.solid, -halfWidth, -halfHeight, w, h);
         var patch = new Patch(assets, Patches.Type.PLAIN);
+        patch.origin.set(halfWidth, halfHeight);
         patch.size.set(w, h);
 
         entity.attach(position, Position.class);

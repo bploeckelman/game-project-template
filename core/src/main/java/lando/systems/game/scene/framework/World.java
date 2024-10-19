@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 /**
  * Container for {@link Entity} and {@link Component} instances.
  * Operations on entities and components can be globally accessed via the
- * facade implementations: {@link World#entities} and {@link World#components}.
+ * facade implementations: {@link World#entities}, {@link World#components}, and {@link World#families}.
  */
 public class World implements Facade.Entities, Facade.Components, Facade.Families {
 
@@ -25,6 +25,7 @@ public class World implements Facade.Entities, Facade.Components, Facade.Familie
     public static Facade.Families families;
 
     private final IntMap<Entity> entitiesById = new IntMap<>();
+    private final Array<Class<? extends Component>> componentClasses = new Array<>();
     private final Map<Class<? extends Component>, Array<? extends Component>> componentsByClass = new HashMap<>();
     private final Map<Class<? extends ComponentFamily>, Array<? extends Component>> componentsByFamilyClass = new HashMap<>();
 
@@ -38,7 +39,7 @@ public class World implements Facade.Entities, Facade.Components, Facade.Familie
      * Updates all active components
      */
     public void update(float dt) {
-        for (var clazz : componentsByClass.keySet()) {
+        for (var clazz : componentClasses) {
             var components = getComponents(clazz);
             for (var component : components) {
                 if (component.active) {
@@ -137,6 +138,9 @@ public class World implements Facade.Entities, Facade.Components, Facade.Familie
     @Override
     @SuppressWarnings("unchecked")
     public <C extends Component> Array<C> getComponents(Class<C> clazz) {
+        if (!componentClasses.contains(clazz, true)) {
+            componentClasses.add(clazz);
+        }
         return (Array<C>) componentsByClass.computeIfAbsent(clazz, (key) -> new Array<>());
     }
 

@@ -134,10 +134,10 @@ public class Mover extends Component {
             var sign = Calc.sign(amount);
 
             while (amount != 0) {
-                Collider hitCollider = collider.checkAndGet(Collider.Mask.solid, 0, sign);
+                var hitCollider = collider.checkAndGet(Collider.Mask.solid, 0, sign);
                 if (hitCollider != null) {
                     if (onHitY != null) {
-                        var onHitParams = new OnHitParams(collider, Direction.Relative.from(sign, Direction.Axis.Y));
+                        var onHitParams = new OnHitParams(hitCollider, Direction.Relative.from(sign, Direction.Axis.Y));
                         onHitY.run(onHitParams);
                     } else {
                         stopY();
