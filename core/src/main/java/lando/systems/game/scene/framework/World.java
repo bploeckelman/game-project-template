@@ -13,16 +13,24 @@ import java.util.stream.Stream;
 
 /**
  * Container for {@link Entity} and {@link Component} instances.
- * Operations on entities and components can be globally accessed via the
- * facade implementations: {@link World#entities}, {@link World#components}, and {@link World#families}.
+ * Operations on entities and components can be globally accessed via the facade implementations:
+ * {@link World#entities}, {@link World#components}, and {@link World#families}.
  */
 public class World implements Facade.Entities, Facade.Components, Facade.Families {
 
     private static final String TAG = World.class.getSimpleName();
 
+    // ------------------------------------------------------------------------
+    // Static Facade instances
+    // ------------------------------------------------------------------------
+
     public static Facade.Entities entities;
     public static Facade.Components components;
     public static Facade.Families families;
+
+    // ------------------------------------------------------------------------
+    // Internal collections
+    // ------------------------------------------------------------------------
 
     private final IntMap<Entity> entitiesById = new IntMap<>();
     private final Array<Class<? extends Component>> componentClasses = new Array<>();

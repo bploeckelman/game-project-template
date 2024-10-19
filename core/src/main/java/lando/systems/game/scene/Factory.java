@@ -9,6 +9,7 @@ import lando.systems.game.scene.components.*;
 import lando.systems.game.scene.framework.Entity;
 import lando.systems.game.scene.framework.World;
 import lando.systems.game.utils.Callbacks;
+import lando.systems.game.utils.Util;
 
 public class Factory {
 
@@ -84,10 +85,30 @@ public class Factory {
         mover.collider = collider;
         mover.speed.setToRandomDirection().scl(MathUtils.random(300, 500));
 
+        var debug = new DebugRender();
+        debug.onShapeRender = (params) -> {
+            var shapes = params.shapes;
+
+            // draw collider
+            var rect = Util.rect.obtain().set(
+                collider.rect.x + position.x(),
+                collider.rect.y + position.y(),
+                collider.rect.width, collider.rect.height);
+            shapes.rectangle(rect, Color.MAGENTA, 1f);
+            Util.free(rect);
+
+            // draw position
+            var outer = 4f;
+            var inner = outer * (3f / 4f);
+            shapes.filledCircle(position.value, outer, Color.CYAN);
+            shapes.filledCircle(position.value, inner, Color.YELLOW);
+        };
+
         entity.attach(position, Position.class);
         entity.attach(image, Image.class);
         entity.attach(mover, Mover.class);
         entity.attach(collider, Collider.class);
+        entity.attach(debug, DebugRender.class);
 
         return entity;
     }
@@ -103,9 +124,13 @@ public class Factory {
         patch.origin.set(halfWidth, halfHeight);
         patch.size.set(w, h);
 
+        var debug = new DebugRender();
+        debug.onShapeRender = DebugRender.DRAW_POSITION;
+
         entity.attach(position, Position.class);
         entity.attach(collider, Collider.class);
         entity.attach(patch, Patch.class);
+        entity.attach(debug, DebugRender.class);
 
         return entity;
     }

@@ -2,10 +2,6 @@ package lando.systems.game.scene.framework;
 
 public abstract class Component {
 
-    public static final Component NONE = new Component() {
-        // marker for component instances that are in an invalid state
-    };
-
     public Entity entity;
     public boolean active;
 
