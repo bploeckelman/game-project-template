@@ -8,36 +8,20 @@ import lando.systems.game.utils.Direction;
 
 public class Mover extends Component {
 
-    private static final String TAG = Mover.class.getSimpleName();
-
-    public static final Integer type = Component.NEXT_TYPE_ID++;
-    public static final Class<? extends Component> clazz = Mover.class;
-
-    static {
-        TYPE_IDS.add(type);
-        TYPES.put(type, clazz);
-    }
-
     private final Vector2 remainder = new Vector2();
 
-    public Position position;
     public Collider collider;
     public Callbacks.TypedArg<OnHitParams> onHitX;
     public Callbacks.TypedArg<OnHitParams> onHitY;
-
     public Vector2 speed;
     public float gravity;
     public float friction;
 
-    public record OnHitParams(
-        Collider hitCollider,
-        Direction.Relative direction)
+    public record OnHitParams(Collider hitCollider, Direction.Relative direction)
         implements Callbacks.TypedArg.Params {
     }
 
     public Mover() {
-        super(type);
-        this.position = null;
         this.collider = null;
         this.onHitX = null;
         this.onHitY = null;
@@ -48,11 +32,8 @@ public class Mover extends Component {
 
     public void update(float dt) {
         // need a position to be moved
-        position = entity.get(Position.type);
+        var position = entity.getIfActive(Position.class);
         if (position == null) return;
-
-        // update the currently attached collider
-        collider = entity.get(Collider.type);
 
         // apply friction, maybe
         if (friction > 0 && onGround()) {
@@ -99,10 +80,23 @@ public class Mover extends Component {
         remainder.y = 0f;
     }
 
+    public void invertX() {
+        speed.x *= -1f;
+        remainder.x = 0f;
+    }
+
+    public void invertY() {
+        speed.y *= -1f;
+        remainder.y = 0f;
+    }
+
     public boolean moveX(int amount) {
+        var position = entity.getIfActive(Position.class);
         if (position == null) return false;
+
         if (collider == null) {
             position.value.x += amount;
+            return true;
         } else {
             // for each pixel, if moving there wouldn't collide then move,
             // otherwise run onHit callback or stop if no callback is set
@@ -128,9 +122,12 @@ public class Mover extends Component {
     }
 
     public boolean moveY(int amount) {
+        var position = entity.getIfActive(Position.class);
         if (position == null) return false;
+
         if (collider == null) {
             position.value.y += amount;
+            return true;
         } else {
             // for each pixel, if moving there wouldn't collide then move,
             // otherwise run onHit callback or stop if no callback is set

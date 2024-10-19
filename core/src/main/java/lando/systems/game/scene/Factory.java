@@ -5,12 +5,7 @@ import com.badlogic.gdx.math.MathUtils;
 import lando.systems.game.assets.Assets;
 import lando.systems.game.assets.Icons;
 import lando.systems.game.assets.Patches;
-import lando.systems.game.scene.components.Collider;
-import lando.systems.game.scene.components.Image;
-import lando.systems.game.scene.components.Mover;
-import lando.systems.game.scene.components.Patch;
-import lando.systems.game.scene.components.Position;
-import lando.systems.game.scene.components.Timer;
+import lando.systems.game.scene.components.*;
 import lando.systems.game.scene.framework.Entity;
 import lando.systems.game.scene.framework.World;
 import lando.systems.game.utils.Callbacks;
@@ -25,7 +20,6 @@ public class Factory {
 
     public static Entity heart(float x, float y) {
         var entity = World.entities.create();
-
         var position = new Position(x, y);
 
         var heartFull = assets.get(Icons.class, Icons.Type.HEART);
@@ -34,6 +28,7 @@ public class Factory {
         var tintBroken = Color.ORANGE.cpy();
         var width = heartFull.getRegionWidth();
         var height = heartFull.getRegionHeight();
+
         var image = new Image(heartFull);
         image.tint.set(tintFull);
         image.origin.set(width / 2f, height / 2f);
@@ -41,9 +36,6 @@ public class Factory {
         var collider = Collider.makeRect(Collider.Mask.solid, -width / 2f, -height / 2f, width, height);
 
         var mover = new Mover();
-        var speed = MathUtils.random(300, 500);
-        mover.speed.setToRandomDirection().scl(speed);
-
         var onHit = (Callbacks.TypedArg<Mover.OnHitParams>) (params) -> {
             // change the image/tint to indicate a hit
             image.region = heartBroken;
@@ -51,35 +43,28 @@ public class Factory {
 
             // change the image back to normal after a bit and self-destruct the timer
             var hitDuration = 0.2f;
-            var timer = (Timer) entity.get(Timer.type);
+            var timer = entity.get(Timer.class);
             if (timer == null) {
                 // no active timer, create and attach one
                 entity.attach(new Timer(hitDuration, () -> {
                     image.region = heartFull;
                     image.tint.set(tintFull);
-                    entity.destroy(Timer.type);
-                }), Timer.type);
+                    entity.destroy(Timer.class);
+                }), Timer.class);
             } else {
                 // timer was still in progress, reset it
                 timer.start(hitDuration);
             }
 
             // invert speed on the hit axis
-            // NOTE: the simpler `mover.speed.[axis] *= -1f` would work,
-            //   except we need to make sure to clear `mover.remainder.[axis]`
-            //   so no extra remainder pushes us through into the hit collider
             switch (params.direction()) {
                 case LEFT, RIGHT: {
-                    float newSpeedX = -mover.speed.x;
-                    mover.stopX();
-                    mover.speed.x = newSpeedX;
+                    mover.invertX();
                     image.scale.set(0.66f, 1.33f);
                 }
                 break;
                 case UP, DOWN: {
-                    float newSpeedY = -mover.speed.y;
-                    mover.stopY();
-                    mover.speed.y = newSpeedY;
+                    mover.invertY();
                     image.scale.set(1.33f, 0.66f);
                 }
                 break;
@@ -87,11 +72,13 @@ public class Factory {
         };
         mover.onHitX = onHit;
         mover.onHitY = onHit;
+        mover.collider = collider;
+        mover.speed.setToRandomDirection().scl(MathUtils.random(300, 500));
 
-        entity.attach(position, Position.type);
-        entity.attach(mover, Mover.type);
-        entity.attach(image, Image.type);
-        entity.attach(collider, Collider.type);
+        entity.attach(position, Position.class);
+        entity.attach(image, Image.class);
+        entity.attach(mover, Mover.class);
+        entity.attach(collider, Collider.class);
 
         return entity;
     }
@@ -104,9 +91,9 @@ public class Factory {
         var patch = new Patch(assets, Patches.Type.PLAIN);
         patch.size.set(w, h);
 
-        entity.attach(position, Position.type);
-        entity.attach(collider, Collider.type);
-        entity.attach(patch, Patch.type);
+        entity.attach(position, Position.class);
+        entity.attach(collider, Collider.class);
+        entity.attach(patch, Patch.class);
 
         return entity;
     }

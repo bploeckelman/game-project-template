@@ -2,44 +2,54 @@ package lando.systems.game.scene.framework;
 
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntMap;
+import lando.systems.game.scene.framework.families.RenderableComponent;
 import lando.systems.game.utils.Util;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * Container for {@link Entity} and {@link Component} instances.
  * Operations on entities and components can be globally accessed via the
  * facade implementations: {@link World#entities} and {@link World#components}.
  */
-public class World implements EntityFacade, ComponentFacade {
+public class World implements Facade.Entities, Facade.Components, Facade.Families {
 
     private static final String TAG = World.class.getSimpleName();
 
-    public static EntityFacade entities;
-    public static ComponentFacade components;
+    public static Facade.Entities entities;
+    public static Facade.Components components;
+    public static Facade.Families families;
 
-    private final IntMap<Entity> entitiesMap = new IntMap<>();
-    private final IntMap<Array<? extends Component>> componentsMap = new IntMap<>();
+    private final IntMap<Entity> entitiesById = new IntMap<>();
+    private final Map<Class<? extends Component>, Array<? extends Component>> componentsByClass = new HashMap<>();
+    private final Map<Class<? extends ComponentFamily>, Array<? extends Component>> componentsByFamilyClass = new HashMap<>();
 
     public World() {
         World.entities = this;
         World.components = this;
+        World.families = this;
     }
 
     /**
      * Updates all active components
      */
     public void update(float dt) {
-        for (var components : componentsMap.values()) {
+        for (var clazz : componentsByClass.keySet()) {
+            var components = getComponents(clazz);
             for (var component : components) {
-                if (!component.active) continue;
-                component.update(dt);
+                if (component.active) {
+                    component.update(dt);
+                }
             }
         }
     }
 
     // ------------------------------------------------------------------------
-    // EntityFacade implementation
+    // Facade.Entities implementation
     // ------------------------------------------------------------------------
 
     /**
@@ -50,7 +60,7 @@ public class World implements EntityFacade, ComponentFacade {
      */
     @Override
     public Optional<Entity> get(int id) {
-        var entity = entitiesMap.get(id);
+        var entity = entitiesById.get(id);
         if (entity == null) {
             Util.log(TAG, "Entity %d not found".formatted(id));
         }
@@ -64,7 +74,7 @@ public class World implements EntityFacade, ComponentFacade {
     @Override
     public Entity create() {
         var entity = new Entity();
-        entitiesMap.put(entity.id, entity);
+        entitiesById.put(entity.id, entity);
         return entity;
     }
 
@@ -80,18 +90,16 @@ public class World implements EntityFacade, ComponentFacade {
         }
 
         // all entity instances should be tracked here, double check and warn if not found
-        if (!entitiesMap.containsKey(entity.id)) {
+        if (!entitiesById.containsKey(entity.id)) {
             Util.log(TAG, "Entity %d not found, may indicate dangling references".formatted(entity.id));
         }
 
-        // remove any components of any type associated with this entity
-        for (int i = 0; i < Component.TYPE_IDS.size; i++) {
-            int componentTypeId = Component.TYPE_IDS.get(i);
-            entity.destroy(componentTypeId);
-        }
+        // detach and destroy all components attached to this entity
+        entity.componentsByClass.values()
+            .forEach(component -> destroy(component, component.getClass()));
 
-        // remove the entity itself allowing it to be garbage collected
-        entitiesMap.remove(entity.id);
+        // remove the entity itself
+        entitiesById.remove(entity.id);
     }
 
     /**
@@ -99,11 +107,11 @@ public class World implements EntityFacade, ComponentFacade {
      */
     public void clear() {
         Util.log(TAG, "Destroying all entities and their attached components!");
-        for (int i = entitiesMap.size - 1; i >= 0; i--) {
-            var entity = entitiesMap.get(i);
+        for (int i = entitiesById.size - 1; i >= 0; i--) {
+            var entity = entitiesById.get(i);
             destroy(entity);
         }
-        entitiesMap.clear();
+        entitiesById.clear();
     }
 
     // ------------------------------------------------------------------------
@@ -111,61 +119,123 @@ public class World implements EntityFacade, ComponentFacade {
     // ------------------------------------------------------------------------
 
     /**
+     * Get a {@link Stream<Component>} of all components in the world
+     */
+    @Override
+    public Stream<Component> stream() {
+        return componentsByClass.values().stream()
+            .flatMap(array -> Arrays.stream(array.items));
+    }
+
+    /**
      * Get all components of the specified type
      *
-     * @param componentTypeId the unique id of the {@link Component} type of the components to retrieve
+     * @param clazz the {@link Class} of the {@link Component} to get (eg. {@code MyComponent.class})
+     * @param <C>   generic type of the component to get
      * @return non-null array containing all components of the given type, if any
      */
-    @SuppressWarnings("unchecked")
     @Override
-    public <C extends Component> Array<C> getAll(int componentTypeId) {
-        Array<C> components;
-        if (componentsMap.containsKey(componentTypeId)) {
-            components = (Array<C>) componentsMap.get(componentTypeId);
-        } else {
-            components = new Array<>();
-            componentsMap.put(componentTypeId, components);
-        }
-        return components;
+    @SuppressWarnings("unchecked")
+    public <C extends Component> Array<C> getComponents(Class<C> clazz) {
+        return (Array<C>) componentsByClass.computeIfAbsent(clazz, (key) -> new Array<>());
     }
 
     /**
      * Add a new component to the global collection, keyed by type
      *
-     * @param component       the {@link Component} to add
-     * @param componentTypeId the unique id of the {@link Component} type of the component to add
+     * @param component the {@link Component} to add
+     * @param clazz     the {@link Class} of the {@link Component} to add (eg. {@code MyComponent.class})
+     * @param <C>       generic type of the component to add
      */
     @Override
-    public void add(Component component, int componentTypeId) {
+    public <C extends Component> void add(Component component, Class<C> clazz) {
+        // validate that there's a component to add
         if (component == null) {
             Util.log(TAG, "add() called with null Component value");
             return;
         }
 
-        var components = getAll(componentTypeId);
-        components.add(component);
+        // validate that the component matches the class type
+        if (!clazz.isInstance(component)) {
+            Util.log(TAG, "add(): component %s is not of the specified class %s, ignoring"
+                .formatted(component.getClass().getSimpleName(), clazz.getSimpleName()));
+            return;
+        }
+
+        // ensure that the component isn't already attached to an entity before adding
+        if (component.entity != Entity.NONE) {
+            Util.log(TAG, "add(): component %s already attached to entity %d, detaching first"
+                .formatted(clazz.getSimpleName(), component.entity.id));
+            component.entity.detach(clazz);
+        }
+
+        // add by family if applicable
+        // NOTE(brian): handling each family manually for now, there aren't many
+        if (component instanceof RenderableComponent renderable) {
+            var components = getFamily(RenderableComponent.class);
+            components.add(renderable);
+        }
+
+        // add by type
+        var components = getComponents(clazz);
+        components.add(clazz.cast(component));
     }
 
     /**
      * Remove the specified component from the global collection, if they're in it
      *
-     * @param component       the {@link Component} to remove
-     * @param componentTypeId the unique id of the component's concrete type
+     * @param component the {@link Component} to destroy
+     * @param clazz     the {@link Class} of the {@link Component} to destroy (eg. {@code MyComponent.class})
+     * @param <C>       generic type of the component to destroy
      */
     @Override
-    public void destroy(Component component, int componentTypeId) {
+    public <C extends Component> void destroy(Component component, Class<C> clazz) {
+        // validate that there's a component to destroy
         if (component == null) {
-            Util.log(TAG, "removeComponent(): component null, ignoring");
+            Util.log(TAG, "destroy(): component null, ignoring");
             return;
         }
 
-        var entity = component.entity;
-        if (entity != Entity.NONE) {
-            Util.log(TAG, "removeComponent(): component attached to entity %d, detaching".formatted(entity.id));
-            entity.detach(componentTypeId);
+        // validate that the component matches the class type
+        if (!clazz.isInstance(component)) {
+            Util.log(TAG, "destroy(): component %s is not of the specified class %s, ignoring"
+                .formatted(component.getClass().getSimpleName(), clazz.getSimpleName()));
+            return;
         }
 
-        var components = getAll(componentTypeId);
-        components.removeValue(component, true);
+        // ensure that the component is detached from its entity before destroying
+        var entity = component.entity;
+        if (entity != Entity.NONE) {
+            Util.log(TAG, "destroy(): component attached to entity %d, detaching first".formatted(entity.id));
+            entity.detach(clazz);
+        }
+
+        // remove by family if applicable
+        // NOTE(brian): handling each family manually for now, there aren't many
+        if (component instanceof RenderableComponent renderable) {
+            var components = getFamily(RenderableComponent.class);
+            components.removeValue(renderable, true);
+        }
+
+        // remove by type
+        var components = getComponents(clazz);
+        components.removeValue(clazz.cast(component), true);
+    }
+
+    // ------------------------------------------------------------------------
+    // Facade.Families implementation
+    // ------------------------------------------------------------------------
+
+    /**
+     * Get all components of the specified family type
+     *
+     * @param clazz the {@link Class} of the {@link ComponentFamily} to get (eg. {@code MyFamily.class})
+     * @param <F>   generic type of the family to get
+     * @return non-null array containing all components of the given family, if any
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public <F extends ComponentFamily> Array<F> getFamily(Class<F> clazz) {
+        return (Array<F>) componentsByFamilyClass.computeIfAbsent(clazz, (key) -> new Array<>());
     }
 }

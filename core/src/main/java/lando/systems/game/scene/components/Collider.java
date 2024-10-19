@@ -2,7 +2,6 @@ package lando.systems.game.scene.components;
 
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.utils.Array;
 import lando.systems.game.scene.framework.Component;
 import lando.systems.game.scene.framework.World;
 import lando.systems.game.utils.Util;
@@ -11,16 +10,9 @@ public class Collider extends Component {
 
     private static final String TAG = Collider.class.getSimpleName();
 
-    public static final Integer type = Component.NEXT_TYPE_ID++;
-    public static final Class<? extends Component> clazz = Collider.class;
-    static {
-        TYPE_IDS.add(type);
-        TYPES.put(type, clazz);
-    }
+    public enum Shape {rect, circ, grid}
 
-    public enum Shape { rect, circ, grid }
-
-    public enum Mask { solid }
+    public enum Mask {solid}
 
     public final Shape shape;
     public final Mask mask;
@@ -44,8 +36,8 @@ public class Collider extends Component {
             this.tileSize = tileSize;
             this.cols = cols;
             this.rows = rows;
-            this.tiles = new Tile[cols*rows];
-            for (int i = 0; i < cols*rows; i++) {
+            this.tiles = new Tile[cols * rows];
+            for (int i = 0; i < cols * rows; i++) {
                 tiles[i] = new Tile();
             }
         }
@@ -75,7 +67,6 @@ public class Collider extends Component {
     // Private constructors ---------------------------------------------------
 
     private Collider(Mask mask, float x, float y, float w, float h) {
-        super(type);
         this.shape = Shape.rect;
         this.mask = mask;
         this.rect = new Rectangle(x, y, w, h);
@@ -84,7 +75,6 @@ public class Collider extends Component {
     }
 
     private Collider(Mask mask, float x, float y, float r) {
-        super(type);
         this.shape = Shape.circ;
         this.mask = mask;
         this.rect = null;
@@ -93,7 +83,6 @@ public class Collider extends Component {
     }
 
     private Collider(Mask mask, int tileSize, int cols, int rows) {
-        super(type);
         this.shape = Shape.grid;
         this.mask = mask;
         this.rect = null;
@@ -117,7 +106,7 @@ public class Collider extends Component {
     }
 
     public Collider checkAndGet(Mask mask, int xOffset, int yOffset) {
-        Array<Collider> colliders = World.components.getAll(Collider.type);
+        var colliders = World.components.getComponents(Collider.class);
         for (var collider : colliders) {
             if (!collider.active) continue;
             if (collider == this) continue;
@@ -159,8 +148,8 @@ public class Collider extends Component {
         var aPos = Util.vec2.obtain().setZero();
         var bPos = Util.vec2.obtain().setZero();
 
-        Position aPosition = a.entity.get(Position.type);
-        Position bPosition = b.entity.get(Position.type);
+        var aPosition = a.entity.get(Position.class);
+        var bPosition = b.entity.get(Position.class);
         if (aPosition != null && aPosition.active) aPos.set(aPosition.value);
         if (bPosition != null && bPosition.active) bPos.set(bPosition.value);
 

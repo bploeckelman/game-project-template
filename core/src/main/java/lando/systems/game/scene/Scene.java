@@ -1,13 +1,9 @@
 package lando.systems.game.scene;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.utils.Array;
-import lando.systems.game.scene.components.Image;
-import lando.systems.game.scene.components.Patch;
-import lando.systems.game.scene.components.interfaces.RenderableComponent;
-import lando.systems.game.scene.framework.Component;
 import lando.systems.game.scene.framework.Entity;
 import lando.systems.game.scene.framework.World;
+import lando.systems.game.scene.framework.families.RenderableComponent;
 import lando.systems.game.screens.BaseScreen;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
@@ -28,9 +24,6 @@ public class Scene<ScreenType extends BaseScreen> {
     public final Entity bottom;
     public final Entity top;
 
-    // -_-
-    private final Array<RenderableComponent> renderables = new Array<>();
-
     public Scene(ScreenType screen) {
         this.screen = screen;
         this.world = screen.world;
@@ -44,38 +37,32 @@ public class Scene<ScreenType extends BaseScreen> {
         var centerY = height / 2;
 
         // TODO(brian): make position/origin/bounds usage uniform across components
-        heart  = Factory.heart(centerX, centerY);
-        left   = Factory.boundary(margin, margin, thickness, height - 2 * margin);
-        right  = Factory.boundary(width - margin - thickness, margin, thickness, height - 2 * margin);
+        heart = Factory.heart(centerX, centerY);
+        left = Factory.boundary(margin, margin, thickness, height - 2 * margin);
+        right = Factory.boundary(width - margin - thickness, margin, thickness, height - 2 * margin);
         bottom = Factory.boundary(margin + thickness, margin, width - 2 * margin - 2 * thickness, thickness);
-        top    = Factory.boundary(margin + thickness, height - margin - thickness, width - 2 * margin - 2 * thickness, thickness);
+        top = Factory.boundary(margin + thickness, height - margin - thickness, width - 2 * margin - 2 * thickness, thickness);
     }
 
     public void update(float dt) {
         world.update(dt);
-
-        Array<Image> images = world.getAll(Image.type);
-        Array<Patch> patches = world.getAll(Patch.type);
-        renderables.clear();
-        renderables.addAll(images);
-        renderables.addAll(patches);
     }
 
     public void render(SpriteBatch batch) {
-        renderables.forEach(it -> {
-            var component = (Component) it;
-            if (component.active) {
-                it.render(batch);
-            }
-        });
+        world.getFamily(RenderableComponent.class)
+            .forEach(component -> {
+                if (component.active) {
+                    component.render(batch);
+                }
+            });
     }
 
     public void render(ShapeDrawer shapes) {
-        renderables.forEach(it -> {
-            var component = (Component) it;
-            if (component.active) {
-                it.render(shapes);
-            }
-        });
+        world.getFamily(RenderableComponent.class)
+            .forEach(component -> {
+                if (component.active) {
+                    component.render(shapes);
+                }
+            });
     }
 }

@@ -7,21 +7,13 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import lando.systems.game.math.Calc;
-import lando.systems.game.scene.components.interfaces.RenderableComponent;
-import lando.systems.game.scene.framework.Component;
+import lando.systems.game.scene.framework.families.RenderableComponent;
 import lando.systems.game.utils.Util;
-import space.earlygrey.shapedrawer.ShapeDrawer;
 
-public class Image extends Component implements RenderableComponent {
+public class Image extends RenderableComponent {
 
     private static final String TAG = Image.class.getSimpleName();
 
-    public static final Integer type = Component.NEXT_TYPE_ID++;
-    public static final Class<? extends Component> clazz = Image.class;
-    static {
-        TYPE_IDS.add(type);
-        TYPES.put(type, clazz);
-    }
 
     public final Vector2 size = new Vector2();
     public final Vector2 origin = new Vector2();
@@ -30,23 +22,18 @@ public class Image extends Component implements RenderableComponent {
     public final Color tint = Color.WHITE.cpy();
 
     public TextureRegion region;
-    public Position position;
-
-    public Image(TextureRegion region) {
-        super(type);
-        this.region = region;
-        this.position = null;
-        this.size.set(region.getRegionWidth(), region.getRegionHeight());
-    }
 
     public Image(Texture texture) {
         this(new TextureRegion(texture));
     }
 
+    public Image(TextureRegion region) {
+        this.region = region;
+        this.size.set(region.getRegionWidth(), region.getRegionHeight());
+    }
+
     @Override
     public void update(float dt) {
-        position = entity.get(Position.type);
-
         scale.x = Calc.approach(Calc.abs(scale.x), defaultScale.x, dt * 4);
         scale.y = Calc.approach(Calc.abs(scale.y), defaultScale.y, dt * 4);
     }
@@ -60,18 +47,12 @@ public class Image extends Component implements RenderableComponent {
         Util.free(rect);
     }
 
-    @Override
-    public void render(ShapeDrawer shapes) {
-        var rect = getPooledRectBounds();
-        shapes.rectangle(rect, tint);
-        Util.free(rect);
-    }
-
     // NOTE: don't forget to free the returned object back to the pool!
     private Rectangle getPooledRectBounds() {
         float x = 0;
         float y = 0;
-        if (position != null && position.active) {
+        var position = entity.getIfActive(Position.class);
+        if (position != null) {
             x = position.x();
             y = position.y();
         }

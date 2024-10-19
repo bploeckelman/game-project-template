@@ -1,8 +1,10 @@
 package lando.systems.game.scene.framework;
 
 import com.badlogic.gdx.utils.GdxRuntimeException;
-import com.badlogic.gdx.utils.IntMap;
 import lando.systems.game.utils.Util;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Entity {
 
@@ -21,12 +23,10 @@ public class Entity {
      * Each {@link Entity} holds references to its attached {@link Component} instances
      * for ease of lookup from other attached components to enable interaction.
      * These should be considered 'weak' references, as the primary container
-     * for all components is in {@link World}. The {@code int key} for this map
-     * and for the global map in {@code World.componentsMap} is the concrete
-     * {@link Component} sub-class {@code MyComponent.type} field.
-     * See the comment in {@link Component} for details on how to create new component types.
+     * for all components is in {@link World}. The {@link Class} instance is a {@code key}
+     * for this map and for the global map in {@code World.componentsByClass}.
      */
-    final IntMap<Component> componentMap = new IntMap<>();
+    final Map<Class<? extends Component>, Component> componentsByClass = new HashMap<>();
 
     /**
      * Globally unique id for this {@link Entity} instance
@@ -39,8 +39,7 @@ public class Entity {
     public boolean active;
 
     /**
-     * Constructor has package-private visibility
-     * limiting creation to {@link World#create()}
+     * Package-private constructor limiting {@link Entity} creation to {@link World#create()}
      */
     Entity() {
         this.id = NEXT_ID++;
@@ -61,75 +60,93 @@ public class Entity {
 
     /**
      * Get the component of the specified type which is attached to this entity if one exists.
-     * NOTE: when calling this method, the variable used to store the return value
-     *   must be declared explicitly using the concrete {@link Component} sub-class type,
-     *   using {@code var} for local variable type inference will infer the most general type,
-     *   in this case {@link Component} rather than {@link C}
-     * @param componentTypeId the type of the component to get (eg. {@code MyComponent.type})
-     * @param <C> generic type of the component to retrieve
+     *
+     * @param clazz the {@link Class} of the {@link Component} to get (eg. {@code MyComponent.class})
+     * @param <C>   generic type of the component to get
      * @return the attached component of type {@link C} if one exists, null otherwise
      */
-    @SuppressWarnings("unchecked")
-    public <C extends Component> C get(int componentTypeId) {
-        return (C) componentMap.get(componentTypeId);
+    public <C extends Component> C get(Class<C> clazz) {
+        return clazz.cast(componentsByClass.get(clazz));
     }
 
-    // TODO(brian): make sure detach/destroy are handled correctly throughout
+    /**
+     * Get the component of the specified type which is attached to this entity if one exists and {@link Component#active}
+     *
+     * @param clazz the {@link Class} of the {@link Component} to get (eg. {@code MyComponent.class})
+     * @param <C>   generic type of the component to get
+     * @return the attached component of type {@link C} if one exists and is active, null otherwise
+     */
+    public <C extends Component> C getIfActive(Class<C> clazz) {
+        var component = get(clazz);
+        if (component != null && component.active) {
+            return component;
+        }
+        return null;
+    }
 
     /**
      * Attach the specified component to this entity in the slot reserved for
-     * the specified component type.
-     * NOTE:
-     *   - Component constructors automatically add the new component to the global Entities.componentsMap
-     *   - This method assumes there's not a component of the specified type attached to this entity already,
-     *     if there might be, use {@link #replace} instead, which behaves the same as this method
-     *     if no component of that type is already attached.
+     * the specified component type, unless a component of that type is already attached.
+     * The {@link Component} constructor automatically adds each new component to the global
+     * {@link World}{@code .componentsByClass} map.
+     *
+     * @param component the {@link Component} to attach
+     * @param clazz     the {@link Class} of the {@link Component} to attach (eg. {@code MyComponent.class})
+     * @param <C>       generic type of the component to attach
      */
-    public void attach(Component component, int componentTypeId) {
-        var existing = componentMap.get(componentTypeId);
+    public <C extends Component> void attach(C component, Class<C> clazz) {
+        var existing = componentsByClass.get(clazz);
         if (existing != null) {
             component.entity = NONE;
-            var clazz = Component.TYPES.get(componentTypeId);
-            Util.log(TAG,
-                "Unable to add %s(%d) to entity %d, only one component per type allowed, use replace(component) instead "
-                .formatted(clazz.getSimpleName(), componentTypeId, id));
+            Util.log(TAG, "%s already attached to entity %d, use replace()".formatted(clazz.getSimpleName(), id));
             return;
         }
+
         component.entity = this;
-        componentMap.put(componentTypeId, component);
+        componentsByClass.put(clazz, component);
     }
 
     /**
      * Detach the component with the specified type from this entity and return it,
      * if a component of the specified type is attached, do nothing and return null otherwise.
      * NOTE: this *does not* destroy the component, so use {@link #destroy} instead if appropriate.
+     *
+     * @param clazz the {@link Class} of the {@link Component} to detach (eg. {@code MyComponent.class})
+     * @param <C>   generic type of the component to detach
      */
-    public Component detach(int componentTypeId) {
-        var component = componentMap.remove(componentTypeId);
-        if (component != null) {
-            component.entity = NONE;
-        }
-        return component;
+    public <C extends Component> C detach(Class<C> clazz) {
+        var component = componentsByClass.remove(clazz);
+        if (component == null) return null;
+
+        component.entity = NONE;
+        return clazz.cast(component);
     }
 
     /**
      * Detach and destroy any existing component of the specified type,
      * and attach the specified component to this entity in its place
+     *
+     * @param component the {@link Component} to replace
+     * @param clazz     the {@link Class} of the {@link Component} to replace (eg. {@code MyComponent.class})
+     * @param <C>       generic type of the component to replace
      */
-    public void replace(Component component, int componentTypeId) {
-        destroy(componentTypeId);
-        componentMap.put(componentTypeId, component);
+    public <C extends Component> void replace(C component, Class<C> clazz) {
+        destroy(clazz);
+        componentsByClass.put(clazz, component);
     }
 
     /**
      * Detach and destroy any existing component of the specified type if one exists,
      * do nothing otherwise.
+     *
+     * @param clazz the {@link Class} of the {@link Component} to destroy (eg. {@code MyComponent.class})
+     * @param <C>   generic type of the component to destroy
      */
-    public void destroy(int componentTypeId) {
-        var existing = detach(componentTypeId);
-        if (existing != null) {
-            existing.entity = NONE;
-            World.components.destroy(existing, componentTypeId);
+    public <C extends Component> void destroy(Class<C> clazz) {
+        var component = detach(clazz);
+        if (component != null) {
+            component.entity = NONE;
+            World.components.destroy(component, clazz);
         }
     }
 
@@ -139,12 +156,10 @@ public class Entity {
      */
     public void clear() {
         Util.log(TAG, "Removing all components from entity %d!".formatted(id));
-        var keys = componentMap.keys().toArray();
-        for (int i = keys.size - 1; i >= 0; i--) {
-            var componentTypeId = keys.get(i);
-            var component = detach(componentTypeId);
-            World.components.destroy(component, componentTypeId);
-        }
-        componentMap.clear();
+        componentsByClass.forEach((clazz, component) -> {
+            detach(clazz);
+            World.components.destroy(component, clazz);
+        });
+        componentsByClass.clear();
     }
 }
