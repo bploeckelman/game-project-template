@@ -18,6 +18,7 @@ public class Scene<ScreenType extends BaseScreen> {
     public final World world;
 
     public final Entity heart;
+    public final Entity hero;
 
     public final Entity left;
     public final Entity right;
@@ -36,8 +37,8 @@ public class Scene<ScreenType extends BaseScreen> {
         var centerX = width / 2;
         var centerY = height / 2;
 
-        // TODO(brian): make position/origin/bounds usage uniform across components
         heart = Factory.heart(centerX, centerY);
+        hero = Factory.hero(centerX, height / 4f);
         left = Factory.boundary(margin, margin, thickness, height - 2 * margin);
         right = Factory.boundary(width - margin - thickness, margin, thickness, height - 2 * margin);
         bottom = Factory.boundary(margin + thickness, margin, width - 2 * margin - 2 * thickness, thickness);

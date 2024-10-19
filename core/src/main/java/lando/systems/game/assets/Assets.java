@@ -15,12 +15,15 @@ import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.I18NBundle;
 import com.badlogic.gdx.utils.ObjectMap;
 import lando.systems.game.Config;
+import lando.systems.game.assets.framework.AssetContainer;
+import lando.systems.game.assets.framework.AssetEnum;
 import lando.systems.game.utils.Util;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 public class Assets implements Disposable {
 
-    public enum Load { SYNC, ASYNC }
+    public enum Load {SYNC, ASYNC}
+
     public boolean loaded = false;
 
     public final ObjectMap<Class<? extends AssetContainer<?, ?>>, AssetContainer<?, ?>> containers;
@@ -47,6 +50,7 @@ public class Assets implements Disposable {
 
         disposables = new Array<>();
         containers = new ObjectMap<>();
+        containers.put(Anims.class, new Anims());
         containers.put(Icons.class, new Icons());
         containers.put(Patches.class, new Patches());
         containers.put(ScreenTransitions.class, new ScreenTransitions());
@@ -131,14 +135,15 @@ public class Assets implements Disposable {
 
     /**
      * Get resource from {@link AssetContainer} managing assets keyed by {@link AssetEnum} for a given {@link Resource} type
+     *
      * @param containerType {@link Class} instance corresponding to the {@link Container} type
-     * @param assetType an {@link Enum<Asset>} value for the given {@link Asset} type, the key to lookup an associated {@link Resource} instance
-     * @param <Asset> {@link AssetEnum} type
-     * @param <Resource> {@link AssetEnum<Resource>} resource type
-     * @param <Container> {@link AssetContainer} type for the given Asset/Resource types
+     * @param assetType     an {@link Enum<Asset>} value for the given {@link Asset} type, the key to lookup an associated {@link Resource} instance
+     * @param <Asset>       {@link AssetEnum} type
+     * @param <Resource>    {@link AssetEnum<Resource>} resource type
+     * @param <Container>   {@link AssetContainer} type for the given Asset/Resource types
      */
     public <Asset extends Enum<Asset> & AssetEnum<Resource>, Resource,
-            Container extends AssetContainer<Asset, Resource>>
+        Container extends AssetContainer<Asset, Resource>>
     Resource get(Class<Container> containerType, Asset assetType) {
         var container = get(containerType);
         if (container == null) {

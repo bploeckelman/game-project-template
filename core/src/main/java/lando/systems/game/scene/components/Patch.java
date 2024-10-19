@@ -25,6 +25,8 @@ public class Patch extends RenderableComponent {
 
     @Override
     public void render(SpriteBatch batch) {
+        if (patch == null) return;
+
         var rect = obtainPooledRectBounds();
         Util.draw(batch, patch, rect, tint);
         Util.free(rect);

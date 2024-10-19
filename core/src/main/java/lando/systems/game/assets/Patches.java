@@ -1,18 +1,21 @@
 package lando.systems.game.assets;
 
 import com.badlogic.gdx.graphics.g2d.NinePatch;
+import lando.systems.game.assets.framework.AssetContainer;
+import lando.systems.game.assets.framework.AssetEnum;
 import lando.systems.game.utils.Util;
 
 public class Patches extends AssetContainer<Patches.Type, NinePatch> {
 
+    public static AssetContainer<Patches.Type, NinePatch> container;
+
     private static final String folder = "patch/";
 
     public enum Type implements AssetEnum<NinePatch> {
-          PLAIN("plain", 2, 2, 2, 2)
-        , PLAIN_DIM("plain-dim", 2, 2, 2, 2)
-        , PLAIN_GRADIENT("plain-gradient", 2, 2, 2, 2)
-        , ROUNDED("rounded", 10, 10, 10, 10)
-        ;
+        PLAIN("plain", 2, 2, 2, 2),
+        PLAIN_DIM("plain-dim", 2, 2, 2, 2),
+        PLAIN_GRADIENT("plain-gradient", 2, 2, 2, 2),
+        ROUNDED("rounded", 10, 10, 10, 10);
 
         private final String regionName;
         private final int left;
@@ -36,6 +39,7 @@ public class Patches extends AssetContainer<Patches.Type, NinePatch> {
 
     public Patches() {
         super(Patches.class, NinePatch.class);
+        Patches.container = this;
     }
 
     @Override

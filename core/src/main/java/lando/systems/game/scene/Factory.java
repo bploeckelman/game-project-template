@@ -2,13 +2,13 @@ package lando.systems.game.scene;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
+import lando.systems.game.assets.Anims;
 import lando.systems.game.assets.Assets;
 import lando.systems.game.assets.Icons;
 import lando.systems.game.assets.Patches;
 import lando.systems.game.scene.components.*;
 import lando.systems.game.scene.framework.Entity;
 import lando.systems.game.scene.framework.World;
-import lando.systems.game.utils.Callbacks;
 import lando.systems.game.utils.Util;
 
 public class Factory {
@@ -37,7 +37,9 @@ public class Factory {
         var collider = Collider.makeRect(Collider.Mask.solid, -width / 2f, -height / 2f, width, height);
 
         var mover = new Mover();
-        var onHit = (Callbacks.TypedArg<Mover.OnHitParams>) (params) -> {
+        mover.collider = collider;
+        mover.speed.setToRandomDirection().scl(MathUtils.random(300, 500));
+        mover.setOnHit((params) -> {
             // change the image/tint to indicate a hit
             image.region = heartBroken;
             image.tint.set(tintBroken);
@@ -79,11 +81,7 @@ public class Factory {
                 }
                 break;
             }
-        };
-        mover.onHitX = onHit;
-        mover.onHitY = onHit;
-        mover.collider = collider;
-        mover.speed.setToRandomDirection().scl(MathUtils.random(300, 500));
+        });
 
         var debug = new DebugRender();
         debug.onShapeRender = (params) -> {
@@ -106,6 +104,70 @@ public class Factory {
 
         entity.attach(position, Position.class);
         entity.attach(image, Image.class);
+        entity.attach(mover, Mover.class);
+        entity.attach(collider, Collider.class);
+        entity.attach(debug, DebugRender.class);
+
+        return entity;
+    }
+
+    public static Entity hero(float x, float y) {
+        var entity = World.entities.create();
+        var position = new Position(x, y);
+
+        // TODO(brian): restore the w/h params to set a default size for an Animator
+        //  independent of scale, using scale behaves a little counterintuitively
+        //  when positioning the sprite relative to the entity's position, especially with animator.facing
+        //  I suspect it might be partly due to the way Util.draw() handles the origin,
+        //  since it uses the Animator bounds rect created by RenderableComponent which takes the Animator origin into account
+        //  the actual Util.draw() override being called doesn't explicitly include the origin values, it just has the rect bounds,
+        //  Util.draw(all-args) has to default to something for the origin, so it uses the center of the rect bounds
+        //  rather than whatever the RenderableCoomponent's actual origin is....
+        //  it was done that way though, because the point of the Util.draw() family is to be a simple one-liner...
+        //  *** it might be worth testing:
+        //  - use batch.draw(tex, x, y, ox, oy, w, h, sx, sy, rot) / shapes.rectangle(x, y, w, h, ox, oy, rot) directly in RenderableComponent types
+        var animator = new Animator(Anims.Type.HERO_IDLE);
+        animator.origin.set(8, 0);
+
+        var collider = Collider.makeRect(Collider.Mask.npc, -4, 0, 6, 12);
+
+        var mover = new Mover();
+        mover.collider = collider;
+        mover.gravity = -100f;
+        mover.friction = 0.9f;
+        mover.speed.set(100, 0);
+        mover.setOnHit((params) -> {
+            switch (params.direction()) {
+                case LEFT, RIGHT: {
+                    mover.invertX();
+                    animator.scale.scl(0.66f, 1.33f);
+                    animator.facing *= -1;
+                }
+                break;
+            }
+        });
+
+        var debug = new DebugRender();
+        debug.onShapeRender = (params) -> {
+            var shapes = params.shapes;
+
+            // draw collider
+            var rect = Util.rect.obtain().set(
+                collider.rect.x + position.x(),
+                collider.rect.y + position.y(),
+                collider.rect.width, collider.rect.height);
+            shapes.rectangle(rect, Color.MAGENTA, 1f);
+            Util.free(rect);
+
+            // draw position
+            var outer = 4f;
+            var inner = outer * (3f / 4f);
+            shapes.filledCircle(position.value, outer, Color.CYAN);
+            shapes.filledCircle(position.value, inner, Color.YELLOW);
+        };
+
+        entity.attach(position, Position.class);
+        entity.attach(animator, Animator.class);
         entity.attach(mover, Mover.class);
         entity.attach(collider, Collider.class);
         entity.attach(debug, DebugRender.class);

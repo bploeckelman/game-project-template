@@ -24,7 +24,7 @@ public class Image extends RenderableComponent {
         if (region == null) return;
 
         var rect = obtainPooledRectBounds();
-        Util.draw(batch, region, rect, tint, scale.x, scale.y);
+        Util.draw(batch, region, rect, tint);
         Util.free(rect);
     }
 }

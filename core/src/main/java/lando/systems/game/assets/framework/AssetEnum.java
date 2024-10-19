@@ -1,4 +1,4 @@
-package lando.systems.game.assets;
+package lando.systems.game.assets.framework;
 
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.utils.Array;

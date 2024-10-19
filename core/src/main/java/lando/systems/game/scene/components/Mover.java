@@ -30,6 +30,7 @@ public class Mover extends Component {
         this.friction = 0f;
     }
 
+    @Override
     public void update(float dt) {
         // need a position to be moved
         var position = entity.getIfActive(Position.class);
@@ -60,6 +61,15 @@ public class Mover extends Component {
         // apply the movement
         moveX(xAmount);
         moveY(yAmount);
+    }
+
+    public void setOnHit(Callbacks.TypedArg<OnHitParams> onHit) {
+        setOnHit(onHit, onHit);
+    }
+
+    public void setOnHit(Callbacks.TypedArg<OnHitParams> onHitX, Callbacks.TypedArg<OnHitParams> onHitY) {
+        this.onHitX = onHitX;
+        this.onHitY = onHitY;
     }
 
     public boolean onGround() {
