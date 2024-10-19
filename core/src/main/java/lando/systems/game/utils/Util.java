@@ -109,6 +109,7 @@ public class Util {
         float q = value * (1 - f * saturation);
         float t = value * (1 - (1 - f) * saturation);
 
+        //@formatter:off
         switch (h) {
             case 0: outColor.set(value, t, p, 1f); break;
             case 1: outColor.set(q, value, p, 1f); break;
@@ -119,6 +120,7 @@ public class Util {
             default: Util.log("HSV->RGB", "Failed to convert HSV->RGB(h: %f, s: %f, v: %f)".formatted(hue, saturation, value));
         }
         return outColor;
+        //@formatter:on
     }
 
     // ------------------------------------------------------------------------
@@ -139,6 +141,7 @@ public class Util {
     }
 
     // Rectangle convenience methods ----------------------
+    private static final Color prevColor = Color.WHITE.cpy();
 
     public static void draw(SpriteBatch batch, TextureRegion texture, Rectangle rect) {
         draw(batch, texture, rect, Color.WHITE);
@@ -157,10 +160,10 @@ public class Util {
         var y = rect.y;
         var h = rect.height;
         var w = rect.width;
-        var color = batch.getColor();
+        prevColor.set(batch.getColor());
         batch.setColor(tint);
         batch.draw(texture, x, y, ox, oy, w, h, sx, sy, rot);
-        batch.setColor(color);
+        batch.setColor(prevColor);
     }
 
     public static void draw(SpriteBatch batch, NinePatch ninePatch, Rectangle rect) {
@@ -180,9 +183,9 @@ public class Util {
         var y = rect.y;
         var h = rect.height;
         var w = rect.width;
-        var color = batch.getColor();
+        prevColor.set(batch.getColor());
         batch.setColor(tint);
         ninePatch.draw(batch, x, y, ox, oy, w, h, sx, sy, rot);
-        batch.setColor(color);
+        batch.setColor(prevColor);
     }
 }
