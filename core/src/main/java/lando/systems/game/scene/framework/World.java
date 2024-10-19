@@ -8,22 +8,25 @@ import java.util.Optional;
 
 /**
  * Container for {@link Entity} and {@link Component} instances.
- * Operations on entities and components can be globally accessed via the
- * facade implementations: {@link World#entities} and {@link World#components}.
+ * Operations on entities, components, and component families can be globally accessed
+ * via the facade implementations: {@link World#entities}, {@link World#components}, and {@link World#families}.
  */
-public class World implements EntityFacade, ComponentFacade {
+public class World implements FacadeEntities, FacadeComponents, FacadeFamilies {
 
     private static final String TAG = World.class.getSimpleName();
 
-    public static EntityFacade entities;
-    public static ComponentFacade components;
+    public static FacadeEntities entities;
+    public static FacadeComponents components;
+    public static FacadeFamilies families;
 
     private final IntMap<Entity> entitiesMap = new IntMap<>();
     private final IntMap<Array<? extends Component>> componentsMap = new IntMap<>();
+    private final IntMap<Array<? extends Component>> familiesMap = new IntMap<>();
 
     public World() {
         World.entities = this;
         World.components = this;
+        World.families = this;
     }
 
     /**
@@ -39,7 +42,7 @@ public class World implements EntityFacade, ComponentFacade {
     }
 
     // ------------------------------------------------------------------------
-    // EntityFacade implementation
+    // FacadeEntities implementation
     // ------------------------------------------------------------------------
 
     /**
@@ -107,7 +110,7 @@ public class World implements EntityFacade, ComponentFacade {
     }
 
     // ------------------------------------------------------------------------
-    // ComponentFacade implementation
+    // FacadeComponents implementation
     // ------------------------------------------------------------------------
 
     /**
@@ -144,6 +147,16 @@ public class World implements EntityFacade, ComponentFacade {
 
         var components = getAll(componentTypeId);
         components.add(component);
+
+        if (component instanceof ComponentFamily) {
+            for (var entry : Component.FAMILIES.entries()) {
+                int familyType = entry.key;
+                var familyClass = entry.value;
+                if (familyClass.isInstance(component)) {
+                    getFamily(familyType).add(familyClass.cast(component));
+                }
+            }
+        }
     }
 
     /**
@@ -167,5 +180,51 @@ public class World implements EntityFacade, ComponentFacade {
 
         var components = getAll(componentTypeId);
         components.removeValue(component, true);
+
+        if (component instanceof ComponentFamily) {
+            for (var entry : Component.FAMILIES.entries()) {
+                int familyType = entry.key;
+                var familyClass = entry.value;
+                if (familyClass.isInstance(component)) {
+                    getFamily(familyType).removeValue(familyClass.cast(component), true);
+                }
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // FacadeFamilies implementation
+    // ------------------------------------------------------------------------
+
+    /**
+     * Get all components of any type in the specified {@link lando.systems.game.scene.framework.ComponentFamily} class
+     *
+     * @param clazz the {@link Class} instance for the desired {@link lando.systems.game.scene.framework.ComponentFamily}
+     * @param <F>   the generic type of the desired {@link lando.systems.game.scene.framework.ComponentFamily}
+     * @return a possibly empty but never null {@link Array<F>} of {@link Component} instances in the specified family
+     */
+    public <F extends ComponentFamily> Array<F> getFamily(Class<F> clazz) {
+        int familyTypeId = F.familyType();
+        return getFamily(familyTypeId);
+    }
+
+    /**
+     * Get all components of any type in the specified {@link lando.systems.game.scene.framework.ComponentFamily} type id
+     *
+     * @param familyTypeId the unique type id of the desired {@link lando.systems.game.scene.framework.ComponentFamily}
+     * @return a possibly empty but never null {@link Array<F>} of {@link Component} instances in the specified family
+     */
+    @SuppressWarnings("unchecked")
+    public <F extends ComponentFamily> Array<F> getFamily(int familyTypeId) {
+        // TODO(brian): could switch to tettinger's gdx collection types
+        //  that implement .putIfAbsent() and other convenience methods
+        Array<? extends Component> components;
+        if (familiesMap.containsKey(familyTypeId)) {
+            components = familiesMap.get(familyTypeId);
+        } else {
+            components = new Array<>();
+            familiesMap.put(familyTypeId, components);
+        }
+        return (Array<F>) components;
     }
 }

@@ -2,7 +2,7 @@ package lando.systems.game.scene.framework;
 
 import java.util.Optional;
 
-public interface EntityFacade {
+public interface FacadeEntities {
     Optional<Entity> get(int id);
 
     Entity create();

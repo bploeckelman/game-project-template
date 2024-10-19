@@ -7,20 +7,21 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import lando.systems.game.math.Calc;
-import lando.systems.game.scene.components.interfaces.RenderableComponent;
 import lando.systems.game.scene.framework.Component;
+import lando.systems.game.scene.framework.FamilyRenderable;
 import lando.systems.game.utils.Util;
-import space.earlygrey.shapedrawer.ShapeDrawer;
 
-public class Image extends Component implements RenderableComponent {
+public class Image extends Component implements FamilyRenderable {
 
     private static final String TAG = Image.class.getSimpleName();
 
     public static final Integer type = Component.NEXT_TYPE_ID++;
     public static final Class<? extends Component> clazz = Image.class;
+
     static {
         TYPE_IDS.add(type);
         TYPES.put(type, clazz);
+        FAMILIES.put(FamilyRenderable.familyType, FamilyRenderable.class);
     }
 
     public final Vector2 size = new Vector2();
@@ -57,13 +58,6 @@ public class Image extends Component implements RenderableComponent {
 
         var rect = getPooledRectBounds();
         Util.draw(batch, region, rect, tint, scale.x, scale.y);
-        Util.free(rect);
-    }
-
-    @Override
-    public void render(ShapeDrawer shapes) {
-        var rect = getPooledRectBounds();
-        shapes.rectangle(rect, tint);
         Util.free(rect);
     }
 
