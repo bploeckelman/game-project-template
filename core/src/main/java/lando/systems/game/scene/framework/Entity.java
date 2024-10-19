@@ -132,7 +132,7 @@ public class Entity {
      */
     public <C extends Component> void replace(C component, Class<C> clazz) {
         destroy(clazz);
-        componentsByClass.put(clazz, component);
+        attach(component, clazz);
     }
 
     /**
@@ -145,7 +145,6 @@ public class Entity {
     public <C extends Component> void destroy(Class<C> clazz) {
         var component = detach(clazz);
         if (component != null) {
-            component.entity = NONE;
             World.components.destroy(component, clazz);
         }
     }
