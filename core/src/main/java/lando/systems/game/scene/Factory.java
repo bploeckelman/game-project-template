@@ -7,8 +7,10 @@ import lando.systems.game.assets.Assets;
 import lando.systems.game.assets.Icons;
 import lando.systems.game.assets.Patches;
 import lando.systems.game.scene.components.*;
+import lando.systems.game.scene.framework.Component;
 import lando.systems.game.scene.framework.Entity;
 import lando.systems.game.scene.framework.World;
+import lando.systems.game.utils.Time;
 
 public class Factory {
 
@@ -98,7 +100,7 @@ public class Factory {
         var position = new Position(x, y);
 
         float scale = 4f;
-        var animator = new Animator(Anims.Type.HERO_RUN);
+        var animator = new Animator(Anims.Type.HERO_FALL);
         animator.origin.set(8 * scale, 0);
         animator.size.scl(scale);
 
@@ -112,13 +114,54 @@ public class Factory {
         mover.setOnHit((params) -> {
             switch (params.direction()) {
                 case LEFT, RIGHT: {
+                    // invert and save the new speed, then stop for a bit
                     mover.invertX();
+                    var speedX = mover.speed.x;
+                    mover.stopX();
+
+                    // oof
+                    Time.pause_for(0.1f);
                     animator.scale.scl(0.66f, 1.33f);
                     animator.facing *= -1;
+
+                    // take a moment to recover
+                    var duration = 0.3f;
+                    var timer = entity.get(Timer.class);
+                    if (timer != null) {
+                        timer.start(duration);
+                    } else {
+                        timer = new Timer(duration, () -> {
+                            mover.speed.x = speedX;
+                            // jump!
+                            mover.speed.y = 500;
+                            // self-destruct
+                            entity.destroy(Timer.class);
+                        });
+                        entity.attach(timer, Timer.class);
+                    }
                 }
                 break;
             }
         });
+
+        var behavior = new Component() {
+            @Override
+            public void update(float dt) {
+                if (mover.onGround()) {
+                    if (mover.speed.x != 0) {
+                        animator.play(Anims.Type.HERO_RUN);
+                    } else {
+                        animator.play(Anims.Type.HERO_IDLE);
+                    }
+                } else {
+                    if (mover.speed.y > 0) {
+                        animator.play(Anims.Type.HERO_JUMP);
+                    } else if (mover.speed.y < 0) {
+                        animator.play(Anims.Type.HERO_FALL);
+                    }
+                }
+            }
+        };
 
         var debug = DebugRender.makeForShapes(DebugRender.DRAW_POSITION_AND_COLLIDER);
 
@@ -127,6 +170,7 @@ public class Factory {
         entity.attach(mover, Mover.class);
         entity.attach(collider, Collider.class);
         entity.attach(debug, DebugRender.class);
+        entity.attach(behavior, Component.class);
 
         return entity;
     }

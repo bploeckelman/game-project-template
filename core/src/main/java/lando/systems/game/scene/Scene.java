@@ -38,7 +38,7 @@ public class Scene<ScreenType extends BaseScreen> {
         var centerY = height / 2;
 
         heart = Factory.heart(centerX, centerY);
-        hero = Factory.hero(centerX, height / 4f);
+        hero = Factory.hero(centerX, height * (2f / 3f));
         left = Factory.boundary(margin, margin, thickness, height - 2 * margin);
         right = Factory.boundary(width - margin - thickness, margin, thickness, height - 2 * margin);
         bottom = Factory.boundary(margin + thickness, margin, width - 2 * margin - 2 * thickness, thickness);
