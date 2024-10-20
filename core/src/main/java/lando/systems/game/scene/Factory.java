@@ -34,7 +34,7 @@ public class Factory {
         image.tint.set(tintFull);
         image.origin.set(width / 2f, height / 2f);
 
-        var collider = Collider.makeRect(Collider.Mask.solid, -width / 2f, -height / 2f, width, height);
+        var collider = Collider.makeRect(Collider.Mask.effect, -width / 2f, -height / 2f, width, height);
 
         var mover = new Mover();
         mover.collider = collider;
@@ -115,27 +115,18 @@ public class Factory {
         var entity = World.entities.create();
         var position = new Position(x, y);
 
-        // TODO(brian): restore the w/h params to set a default size for an Animator
-        //  independent of scale, using scale behaves a little counterintuitively
-        //  when positioning the sprite relative to the entity's position, especially with animator.facing
-        //  I suspect it might be partly due to the way Util.draw() handles the origin,
-        //  since it uses the Animator bounds rect created by RenderableComponent which takes the Animator origin into account
-        //  the actual Util.draw() override being called doesn't explicitly include the origin values, it just has the rect bounds,
-        //  Util.draw(all-args) has to default to something for the origin, so it uses the center of the rect bounds
-        //  rather than whatever the RenderableCoomponent's actual origin is....
-        //  it was done that way though, because the point of the Util.draw() family is to be a simple one-liner...
-        //  *** it might be worth testing:
-        //  - use batch.draw(tex, x, y, ox, oy, w, h, sx, sy, rot) / shapes.rectangle(x, y, w, h, ox, oy, rot) directly in RenderableComponent types
-        var animator = new Animator(Anims.Type.HERO_IDLE);
-        animator.origin.set(8, 0);
+        float scale = 4f;
+        var animator = new Animator(Anims.Type.HERO_RUN);
+        animator.origin.set(8 * scale, 0);
+        animator.size.scl(scale);
 
-        var collider = Collider.makeRect(Collider.Mask.npc, -4, 0, 6, 12);
+        var collider = Collider.makeRect(Collider.Mask.npc, -4 * scale, 0, 6 * scale, 12 * scale);
 
         var mover = new Mover();
         mover.collider = collider;
-        mover.gravity = -100f;
+        mover.gravity = -500f;
         mover.friction = 0.9f;
-        mover.speed.set(100, 0);
+        mover.speed.set(200, 0);
         mover.setOnHit((params) -> {
             switch (params.direction()) {
                 case LEFT, RIGHT: {

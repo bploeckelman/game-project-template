@@ -12,7 +12,7 @@ public class Collider extends Component {
 
     public enum Shape {rect, circ, grid}
 
-    public enum Mask {solid, npc}
+    public enum Mask {solid, npc, effect}
 
     public final Shape shape;
     public final Mask mask;
