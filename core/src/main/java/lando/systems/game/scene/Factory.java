@@ -109,8 +109,7 @@ public class Factory {
         var mover = new Mover();
         mover.collider = collider;
         mover.gravity = -500f;
-        mover.friction = 0.9f;
-        mover.speed.set(200, 0);
+        mover.speed.set(400, 0);
         mover.setOnHit((params) -> {
             switch (params.direction()) {
                 case LEFT, RIGHT: {
@@ -119,22 +118,26 @@ public class Factory {
                     var speedX = mover.speed.x;
                     mover.stopX();
 
-                    // oof
+                    // do an 'oof'
                     Time.pause_for(0.1f);
                     animator.scale.scl(0.66f, 1.33f);
-                    animator.facing *= -1;
 
                     // take a moment to recover
                     var duration = 0.3f;
                     var timer = entity.get(Timer.class);
                     if (timer != null) {
+                        // timer was still in progress, reset it
                         timer.start(duration);
                     } else {
                         timer = new Timer(duration, () -> {
+                            // turn around
+                            animator.facing *= -1;
+                            // resume moving in the opposite direction
                             mover.speed.x = speedX;
                             // jump!
                             mover.speed.y = 500;
-                            // self-destruct
+
+                            // self-destruct the timer
                             entity.destroy(Timer.class);
                         });
                         entity.attach(timer, Timer.class);

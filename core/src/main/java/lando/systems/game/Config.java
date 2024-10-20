@@ -19,13 +19,15 @@ public class Config {
      * intended for disabling all debug features at once in production builds
      */
     public enum Flag {
+        //@formatter:off
           GLOBAL(true)
         , RENDER(false)
         , UI(false)
         , LOG(true)
         , FRAME_STEP(false)
-        , START_ON_GAMESCREEN(false)
+        , START_ON_GAMESCREEN(true)
         ;
+        //@formatter:on
 
         private boolean isEnabled;
 
@@ -68,6 +70,7 @@ public class Config {
 
         /**
          * Enables or disables this flag, based of the specified value regardless of its current status
+         *
          * @param enabled whether to enable or disable this flag
          * @return the new value of this flag, or false if a null flag type was provided
          */
@@ -79,6 +82,7 @@ public class Config {
 
         /**
          * Toggles whether this flag is enabled or disabled
+         *
          * @return the new value of this flag, after toggling
          */
         public boolean toggle() {
