@@ -6,6 +6,7 @@ import lando.systems.game.Config;
 import lando.systems.game.scene.framework.Entity;
 import lando.systems.game.scene.framework.families.RenderableComponent;
 import lando.systems.game.utils.Callbacks;
+import lando.systems.game.utils.Util;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 public class DebugRender extends RenderableComponent {
@@ -33,16 +34,46 @@ public class DebugRender extends RenderableComponent {
      *   then mix and match for a given entity without needing to reimplement them
      */
     public static final Callbacks.TypedArg<Params> DRAW_POSITION = (params) -> {
+        var shapes = params.shapes;
         var entity = params.self.entity;
         if (entity == Entity.NONE) return;
-
         var position = entity.get(Position.class);
         if (position == null) return;
 
+        // draw position
         var outer = 4f;
         var inner = outer * (3f / 4f);
-        params.shapes.filledCircle(position.value, outer, Color.CYAN);
-        params.shapes.filledCircle(position.value, inner, Color.YELLOW);
+        shapes.filledCircle(position.value, outer, Color.CYAN);
+        shapes.filledCircle(position.value, inner, Color.YELLOW);
+    };
+
+    /**
+     * Default render callback that draws a filled circle at the entity's position
+     * and a rectangle for the entity's collider if it has one.
+     */
+    public static final Callbacks.TypedArg<Params> DRAW_POSITION_AND_COLLIDER = (params) -> {
+        var shapes = params.shapes;
+        var entity = params.self.entity;
+        if (entity == Entity.NONE) return;
+        var position = entity.get(Position.class);
+        if (position == null) return;
+
+        // draw collider
+        var collider = entity.get(Collider.class);
+        if (collider != null) {
+            var rect = Util.rect.obtain().set(
+                collider.rect.x + position.x(),
+                collider.rect.y + position.y(),
+                collider.rect.width, collider.rect.height);
+            shapes.rectangle(rect, Color.MAGENTA, 1f);
+            Util.free(rect);
+        }
+
+        // draw position
+        var outer = 4f;
+        var inner = outer * (3f / 4f);
+        shapes.filledCircle(position.value, outer, Color.CYAN);
+        shapes.filledCircle(position.value, inner, Color.YELLOW);
     };
 
     /**

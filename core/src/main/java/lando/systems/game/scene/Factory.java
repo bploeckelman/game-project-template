@@ -9,7 +9,6 @@ import lando.systems.game.assets.Patches;
 import lando.systems.game.scene.components.*;
 import lando.systems.game.scene.framework.Entity;
 import lando.systems.game.scene.framework.World;
-import lando.systems.game.utils.Util;
 
 public class Factory {
 
@@ -83,24 +82,7 @@ public class Factory {
             }
         });
 
-        var debug = new DebugRender();
-        debug.onShapeRender = (params) -> {
-            var shapes = params.shapes;
-
-            // draw collider
-            var rect = Util.rect.obtain().set(
-                collider.rect.x + position.x(),
-                collider.rect.y + position.y(),
-                collider.rect.width, collider.rect.height);
-            shapes.rectangle(rect, Color.MAGENTA, 1f);
-            Util.free(rect);
-
-            // draw position
-            var outer = 4f;
-            var inner = outer * (3f / 4f);
-            shapes.filledCircle(position.value, outer, Color.CYAN);
-            shapes.filledCircle(position.value, inner, Color.YELLOW);
-        };
+        var debug = DebugRender.makeForShapes(DebugRender.DRAW_POSITION_AND_COLLIDER);
 
         entity.attach(position, Position.class);
         entity.attach(image, Image.class);
@@ -138,24 +120,7 @@ public class Factory {
             }
         });
 
-        var debug = new DebugRender();
-        debug.onShapeRender = (params) -> {
-            var shapes = params.shapes;
-
-            // draw collider
-            var rect = Util.rect.obtain().set(
-                collider.rect.x + position.x(),
-                collider.rect.y + position.y(),
-                collider.rect.width, collider.rect.height);
-            shapes.rectangle(rect, Color.MAGENTA, 1f);
-            Util.free(rect);
-
-            // draw position
-            var outer = 4f;
-            var inner = outer * (3f / 4f);
-            shapes.filledCircle(position.value, outer, Color.CYAN);
-            shapes.filledCircle(position.value, inner, Color.YELLOW);
-        };
+        var debug = DebugRender.makeForShapes(DebugRender.DRAW_POSITION_AND_COLLIDER);
 
         entity.attach(position, Position.class);
         entity.attach(animator, Animator.class);
@@ -177,8 +142,7 @@ public class Factory {
         patch.origin.set(halfWidth, halfHeight);
         patch.size.set(w, h);
 
-        var debug = new DebugRender();
-        debug.onShapeRender = DebugRender.DRAW_POSITION;
+        var debug = DebugRender.makeForShapes(DebugRender.DRAW_POSITION_AND_COLLIDER);
 
         entity.attach(position, Position.class);
         entity.attach(collider, Collider.class);
