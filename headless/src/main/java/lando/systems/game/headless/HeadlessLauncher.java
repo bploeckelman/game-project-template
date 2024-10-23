@@ -3,17 +3,19 @@ package lando.systems.game.headless;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.backends.headless.HeadlessApplication;
 import com.badlogic.gdx.backends.headless.HeadlessApplicationConfiguration;
-import lando.systems.game.Main;
 
-/** Launches the headless application. Can be converted into a utilities project or a server application. */
+/**
+ * Launches the headless application. Can be converted into a utilities project or a server application.
+ */
 public class HeadlessLauncher {
     public static void main(String[] args) {
-        createApplication();
+        createApplication(args);
     }
 
-    private static Application createApplication() {
+    private static Application createApplication(String[] args) {
+        return new HeadlessApplication(new AsepritePacker(args), getDefaultConfiguration());
         // Note: you can use a custom ApplicationListener implementation for the headless project instead of Main.
-        return new HeadlessApplication(new Main(), getDefaultConfiguration());
+//        return new HeadlessApplication(new Main(), getDefaultConfiguration());
     }
 
     private static HeadlessApplicationConfiguration getDefaultConfiguration() {

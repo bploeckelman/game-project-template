@@ -1,6 +1,7 @@
 ## Project specific:
-/assets/sprites/sprites*.atlas
-/assets/sprites/sprites*.png
+/assets/sprites/*.atlas
+/assets/sprites/*.png
+/assets/sprites/*.json
 
 ## Gradle:
 .gradle/
