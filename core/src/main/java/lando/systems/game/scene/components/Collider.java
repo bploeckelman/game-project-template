@@ -6,6 +6,8 @@ import lando.systems.game.scene.framework.Component;
 import lando.systems.game.scene.framework.World;
 import lando.systems.game.utils.Util;
 
+import java.util.EnumSet;
+
 public class Collider extends Component {
 
     private static final String TAG = Collider.class.getSimpleName();
@@ -91,6 +93,24 @@ public class Collider extends Component {
     }
 
     // Implementation ---------------------------------------------------------
+    // NOTE(brian): there's room for improvement in the API here,
+    //  the addition of the Mover.collidesWith mask set should be the default way of running `check*()` family methods
+    //  but we still want to be able to arbitrarily run checks on a Collider against a specific Mask type,
+    //  so for now I'm leaving the `check*(Mask mask, ...)` overrides and just updating the one used by Mover
+
+    public Collider checkAndGet(EnumSet<Mask> masks, int xOffset, int yOffset) {
+        var colliders = World.components.getComponents(Collider.class);
+        for (var collider : colliders) {
+            if (collider == this) continue;
+            if (!collider.active) continue;
+            if (!masks.contains(collider.mask)) continue;
+
+            if (this.overlaps(collider, xOffset, yOffset)) {
+                return collider;
+            }
+        }
+        return null;
+    }
 
     public boolean check(Mask mask) {
         return check(mask, 0, 0);

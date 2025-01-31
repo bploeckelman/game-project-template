@@ -39,6 +39,7 @@ public class Factory {
 
         var mover = new Mover();
         mover.collider = collider;
+        mover.addCollidesWith(Collider.Mask.npc);
         mover.speed.setToRandomDirection().scl(MathUtils.random(300, 500));
         mover.setOnHit((params) -> {
             // change the image/tint to indicate a hit
