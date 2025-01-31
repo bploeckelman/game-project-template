@@ -38,6 +38,7 @@ public class Transition {
     private static ScreenTransitions transitions;
     private static FrameBufferObjects fbo;
     private static ShaderProgram shader;
+    private static BaseScreen current;
     private static BaseScreen next;
     private static float percent;
     private static boolean instant;
@@ -46,6 +47,7 @@ public class Transition {
         transitions = assets.get(ScreenTransitions.class);
         fbo = new FrameBufferObjects();
         shader = transitions.get(Type.random());
+        current = null;
         next = null;
 
         // NOTE: must be 1 on construction to indicate that there's not a transition in progress
@@ -62,11 +64,15 @@ public class Transition {
         percent = 0;
         instant = immediate;
         next = newScreen;
+        current = Main.game.currentScreen;
 
         if (type == null) {
             type = Type.random();
         }
         shader = transitions.get(type);
+
+        next.transitioning = true;
+        current.transitioning = true;
     }
 
     public static void update(float dt) {
@@ -81,8 +87,13 @@ public class Transition {
         if (percent >= 1) {
             percent = 1;
 
-            Main.game.currentScreen = next;
+            next.transitioning = false;
+            current.transitioning = false;
+
+            current = next;
             next = null;
+
+            Main.game.currentScreen = current;
         }
     }
 

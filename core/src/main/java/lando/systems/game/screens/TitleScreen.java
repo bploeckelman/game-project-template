@@ -19,7 +19,7 @@ public class TitleScreen extends BaseScreen {
     @Override
     public void update(float delta) {
         var shouldExit = Gdx.input.justTouched() || Gdx.input.isKeyJustPressed(Input.Keys.ANY_KEY);
-        if (shouldExit && !exiting) {
+        if (shouldExit && !transitioning) {
             game.setScreen(new GameScreen());
         }
     }
@@ -32,7 +32,7 @@ public class TitleScreen extends BaseScreen {
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
         batch.draw(logo,
-            (camera.viewportWidth  - logo.getRegionWidth())  / 2f,
+            (camera.viewportWidth - logo.getRegionWidth()) / 2f,
             (camera.viewportHeight - logo.getRegionHeight()) / 2f);
         batch.end();
     }

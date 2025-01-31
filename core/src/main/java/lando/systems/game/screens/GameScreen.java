@@ -61,7 +61,7 @@ public class GameScreen extends BaseScreen {
         var shouldQuit = shouldExit && Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT);
         if (shouldQuit) {
             Gdx.app.exit();
-        } else if (shouldExit && !exiting) {
+        } else if (shouldExit && !transitioning) {
             game.setScreen(new TitleScreen());
         }
     }

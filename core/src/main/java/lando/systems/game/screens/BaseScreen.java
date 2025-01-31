@@ -21,7 +21,7 @@ public abstract class BaseScreen implements Disposable {
 
     public OrthographicCamera worldCamera;
     public Vector3 vec3 = new Vector3();
-    public boolean exiting = false;
+    public boolean transitioning = false;
 
     public BaseScreen() {
         this.game = Main.game;
@@ -49,6 +49,7 @@ public abstract class BaseScreen implements Disposable {
     }
 
     public abstract void render(SpriteBatch batch);
+
     public void renderOffscreenBuffers(SpriteBatch batch) {}
 
     public void initializeUI() {}
