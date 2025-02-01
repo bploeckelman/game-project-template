@@ -1,6 +1,7 @@
 package lando.systems.game.scene.components;
 
 import com.badlogic.gdx.math.Circle;
+import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
 import lando.systems.game.math.Calc;
 import lando.systems.game.scene.framework.Component;
@@ -15,7 +16,7 @@ public class Collider extends Component {
 
     public enum Shape {rect, circ, grid}
 
-    public enum Mask {solid, npc, effect}
+    public enum Mask {solid, npc, effect, object}
 
     public final Shape shape;
     public final Mask mask;
@@ -57,7 +58,7 @@ public class Collider extends Component {
         return new Collider(mask, x, y, w, h);
     }
 
-    private static Collider makeCirc(Mask mask, float x, float y, float r) {
+    public static Collider makeCirc(Mask mask, float x, float y, float r) {
         return new Collider(mask, x, y, r);
     }
 
@@ -210,10 +211,45 @@ public class Collider extends Component {
     }
 
     public boolean overlapsRectCirc(Collider r, Collider c, int xOffset, int yOffset) {
-        var rect = r.rect;
-        var circ = c.circ;
-        // TODO...
-        return false;
+        // obtain temp objects to work with
+        var rect = Util.rect.obtain();
+        var circ = Util.circ.obtain();
+        var aPos  = Util.vec2.obtain().setZero();
+        var bPos  = Util.vec2.obtain().setZero();
+
+        // use active position components attached to each entity, if any
+        var aPosition = r.entity.getIfActive(Position.class);
+        var bPosition = c.entity.getIfActive(Position.class);
+        if (aPosition != null) aPos.set(aPosition.value);
+        if (bPosition != null) bPos.set(bPosition.value);
+
+        // TODO(brian): need a way to indicate which (a or b) the offsets should apply to
+        //  so `overlapsRectCirc` behaves correctly when this.circ and that.rect
+        //  and we call it as: `overlapsRectCirc(other, this, ...)`
+        rect.set(
+            r.rect.x + aPos.x,
+            r.rect.y + aPos.y,
+            r.rect.width, r.rect.height);
+
+        // TODO(brian): this is a good example for the above comment:
+        //  we should be able to ignore which collider is moving and which is stationary,
+        //  but if the offsets are added to the rect in the case where the test rects are stationary
+        //  and the circles are moving, then the circles get 'stuck' in the rect on collision,
+        //  but if the offsets are added to the circles, then it works as expected
+        circ.set(
+            c.circ.x + bPos.x + xOffset,
+            c.circ.y + bPos.y + yOffset,
+            c.circ.radius);
+
+        // do they overlap?
+        var overlaps = Intersector.overlaps(circ, rect);
+
+        // cleanup and return
+        Util.vec2.free(bPos);
+        Util.vec2.free(aPos);
+        Util.circ.free(circ);
+        Util.rect.free(rect);
+        return overlaps;
     }
 
     public boolean overlapsRectGrid(Collider r, Collider g, int xOffset, int yOffset) {
@@ -289,11 +325,12 @@ public class Collider extends Component {
         if (bPosition != null) bPos.set(bPosition.value);
 
         // construct the source circle relative to the target circle
-        aCirc.set(
-            a.circ.x + aPos.x + xOffset - bPos.x,
-            a.circ.y + aPos.y + yOffset - bPos.y,
-            a.circ.radius);
+//        aCirc.set(
+//            a.circ.x + aPos.x + xOffset - bPos.x,
+//            a.circ.y + aPos.y + yOffset - bPos.y,
+//            a.circ.radius);
 
+        aCirc.set(aPos.x + xOffset, aPos.y + yOffset, a.circ.radius);
         bCirc.set(bPos.x, bPos.y, b.circ.radius);
 
         // do they overlap?

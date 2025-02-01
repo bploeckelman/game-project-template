@@ -99,6 +99,21 @@ public class Util {
         return colors.get(index);
     }
 
+    public static Color randomColorPastel() {
+        return randomColorHsv(180f, 360f, 0.7f, 0.9f, 0.8f, 0.95f);
+    }
+
+    public static Color randomColorHsv() {
+        return randomColorHsv(0f, 360f, 0f, 1f, 0f, 1f);
+    }
+
+    public static Color randomColorHsv(float minHue0_360, float maxHue0_360, float minSat0_1, float maxSat0_1, float minVal0_1, float maxVal0_1) {
+        var hue = MathUtils.random(minHue0_360, maxHue0_360);
+        var sat = MathUtils.random(minSat0_1, maxSat0_1);
+        var val = MathUtils.random(maxVal0_1, minVal0_1);
+        return Color.WHITE.cpy().fromHsv(hue, sat, val);
+    }
+
     public static Color hsvToRgb(float hue, float saturation, float value, Color outColor) {
         if (outColor == null) {
             outColor = new Color();
@@ -133,7 +148,7 @@ public class Util {
     // ------------------------------------------------------------------------
     // Drawing related
     // ------------------------------------------------------------------------
-    private static final Color prevColor = Color.WHITE.cpy();
+    private static final Color prevColor = com.badlogic.gdx.graphics.Color.WHITE.cpy();
 
     // Circle convenience methods -------------------------
 

@@ -1,6 +1,9 @@
 package lando.systems.game.scene;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
+import lando.systems.game.scene.components.Mover;
 import lando.systems.game.scene.framework.Entity;
 import lando.systems.game.scene.framework.World;
 import lando.systems.game.scene.framework.families.RenderableComponent;
@@ -43,6 +46,27 @@ public class Scene<ScreenType extends BaseScreen> {
         right = Factory.boundary(width - margin - thickness, margin, thickness, height - 2 * margin);
         bottom = Factory.boundary(margin + thickness, margin, width - 2 * margin - 2 * thickness, thickness);
         top = Factory.boundary(margin + thickness, height - margin - thickness, width - 2 * margin - 2 * thickness, thickness);
+
+        var simpleCircleTest = true;
+        if (simpleCircleTest) {
+            var a = Factory.circle(centerX - 200f, centerY, 10f);
+            var b = Factory.circle(centerX + 200f, centerY, 10f);
+            a.get(Mover.class).speed.set( 300f, 0f);
+            b.get(Mover.class).speed.set(-300f, 0f);
+        } else {
+            var numCircles = 10;
+            var interior = new Rectangle(
+                margin + thickness,
+                margin + thickness,
+                width - 2 * (margin + thickness),
+                height - 2 * (margin + thickness));
+            for (int i = 0; i < numCircles; i++) {
+                var radius = MathUtils.random(5f, 20f);
+                var x = MathUtils.random(interior.x + radius, interior.x + interior.width - radius);
+                var y = MathUtils.random(interior.y + radius, interior.y + interior.height - radius);
+                Factory.circle(x, y, radius);
+            }
+        }
     }
 
     public void update(float dt) {

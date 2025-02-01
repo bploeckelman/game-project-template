@@ -11,6 +11,7 @@ import lando.systems.game.scene.framework.Component;
 import lando.systems.game.scene.framework.Entity;
 import lando.systems.game.scene.framework.World;
 import lando.systems.game.utils.Time;
+import lando.systems.game.utils.Util;
 
 public class Factory {
 
@@ -82,6 +83,49 @@ public class Factory {
                     }
                 }
                 break;
+            }
+        });
+
+        var debug = DebugRender.makeForShapes(DebugRender.DRAW_POSITION_AND_COLLIDER);
+
+        entity.attach(position, Position.class);
+        entity.attach(image, Image.class);
+        entity.attach(mover, Mover.class);
+        entity.attach(collider, Collider.class);
+        entity.attach(debug, DebugRender.class);
+
+        return entity;
+    }
+
+    public static Entity circle(float x, float y, float radius) {
+        var entity = World.entities.create();
+
+        var position = new Position(x, y);
+
+        var region = assets.atlas.findRegion("objects/circle");
+        var image = new Image(region);
+        image.size.set(2 * radius, 2 * radius);
+        image.origin.set(radius, radius);
+        image.tint.set(Util.randomColorPastel());
+
+        var collider = Collider.makeCirc(Collider.Mask.object, 0, 0, radius);
+
+        var speed = MathUtils.random(100f, 300f);
+        var mover = new Mover();
+        mover.collider = collider;
+        mover.speed.setToRandomDirection().scl(speed);
+        mover.addCollidesWith(Collider.Mask.object);
+        mover.setOnHit((params) -> {
+            // invert speed on the hit axis and add some squash/stretch
+            switch (params.direction()) {
+                case LEFT, RIGHT: {
+                    mover.invertX();
+                    image.scale.set(0.66f, 1.33f);
+                } break;
+                case UP, DOWN: {
+                    mover.invertY();
+                    image.scale.set(1.33f, 0.66f);
+                } break;
             }
         });
 
