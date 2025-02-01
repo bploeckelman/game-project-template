@@ -21,14 +21,14 @@ public class Mover extends Component {
      */
     private final EnumSet<Collider.Mask> collidesWith = EnumSet.of(Collider.Mask.solid);
 
-    public Collider collider;
+    public Collider2 collider;
     public Callbacks.TypedArg<OnHitParams> onHitX;
     public Callbacks.TypedArg<OnHitParams> onHitY;
     public Vector2 speed;
     public float gravity;
     public float friction;
 
-    public record OnHitParams(Collider hitCollider, Direction.Relative direction)
+    public record OnHitParams(Collider2 hitCollider, Direction.Relative direction)
         implements Callbacks.TypedArg.Params {
     }
 

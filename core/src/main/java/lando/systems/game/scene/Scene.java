@@ -49,10 +49,15 @@ public class Scene<ScreenType extends BaseScreen> {
 
         var simpleCircleTest = true;
         if (simpleCircleTest) {
-            var a = Factory.circle(centerX - 200f, centerY, 10f);
-            var b = Factory.circle(centerX + 200f, centerY, 10f);
-            a.get(Mover.class).speed.set( 300f, 0f);
-            b.get(Mover.class).speed.set(-300f, 0f);
+            var l = Factory.circle(centerX - 200f, centerY, 10f);
+            var r = Factory.circle(centerX + 200f, centerY, 10f);
+            l.get(Mover.class).speed.set( 300f, 0f);
+            r.get(Mover.class).speed.set(-300f, 0f);
+
+            var d = Factory.circle(centerX, centerY - 100f, 10f);
+            var u = Factory.circle(centerX, centerY + 100f, 10f);
+            d.get(Mover.class).speed.set(0f,  300f);
+            u.get(Mover.class).speed.set(0f, -300f);
         } else {
             var numCircles = 10;
             var interior = new Rectangle(

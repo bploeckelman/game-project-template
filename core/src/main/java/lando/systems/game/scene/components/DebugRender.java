@@ -61,29 +61,32 @@ public class DebugRender extends RenderableComponent {
         // draw collider
         var color = Color.MAGENTA;
         var lineWidth = 1f;
-        var collider = entity.get(Collider.class);
+        var collider = entity.get(Collider2.class);
         if (collider != null) {
             switch (collider.shape) {
-                case rect -> {
+                case Collider2.RectShape shape -> {
                     var rect = Util.rect.obtain().set(
-                        collider.rect.x + position.x(),
-                        collider.rect.y + position.y(),
-                        collider.rect.width, collider.rect.height);
+                        shape.rect.x + position.x(),
+                        shape.rect.y + position.y(),
+                        shape.rect.width,
+                        shape.rect.height
+                    );
                     shapes.rectangle(rect, color, lineWidth);
                     Util.free(rect);
                 }
-                case circ -> {
+                case Collider2.CircShape shape -> {
                     var circ = Util.circ.obtain();
                     circ.set(
-                        collider.circ.x + position.x(),
-                        collider.circ.y + position.y(),
-                        collider.circ.radius);
-                    shapes.setColor(color);
+                        shape.circ.x + position.x(),
+                        shape.circ.y + position.y(),
+                        shape.circ.radius
+                    );
+                    shapes.setColor(Color.YELLOW);
                     shapes.circle(circ.x, circ.y, circ.radius, lineWidth);
                     shapes.setColor(Color.WHITE);
                     Util.free(circ);
                 }
-                case grid -> Util.log("DebugRender", "collider type 'grid' not supported yet");
+                case Collider2.GridShape shape -> Util.log("DebugRender", "collider type 'grid' not supported yet");
             }
         }
 

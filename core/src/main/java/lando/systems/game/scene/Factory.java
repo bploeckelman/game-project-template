@@ -36,7 +36,7 @@ public class Factory {
         image.tint.set(tintFull);
         image.origin.set(width / 2f, height / 2f);
 
-        var collider = Collider.makeRect(Collider.Mask.effect, -width / 2f, -height / 2f, width, height);
+        var collider = Collider2.makeRect(Collider.Mask.effect, -width / 2f, -height / 2f, width, height);
 
         var mover = new Mover();
         mover.collider = collider;
@@ -91,7 +91,7 @@ public class Factory {
         entity.attach(position, Position.class);
         entity.attach(image, Image.class);
         entity.attach(mover, Mover.class);
-        entity.attach(collider, Collider.class);
+        entity.attach(collider, Collider2.class);
         entity.attach(debug, DebugRender.class);
 
         return entity;
@@ -108,7 +108,7 @@ public class Factory {
         image.origin.set(radius, radius);
         image.tint.set(Util.randomColorPastel());
 
-        var collider = Collider.makeCirc(Collider.Mask.object, 0, 0, radius);
+        var collider = Collider2.makeCirc(Collider.Mask.object, 0, 0, radius);
 
         var speed = MathUtils.random(100f, 300f);
         var mover = new Mover();
@@ -134,7 +134,7 @@ public class Factory {
         entity.attach(position, Position.class);
         entity.attach(image, Image.class);
         entity.attach(mover, Mover.class);
-        entity.attach(collider, Collider.class);
+        entity.attach(collider, Collider2.class);
         entity.attach(debug, DebugRender.class);
 
         return entity;
@@ -149,7 +149,7 @@ public class Factory {
         animator.origin.set(8 * scale, 0);
         animator.size.scl(scale);
 
-        var collider = Collider.makeRect(Collider.Mask.npc, -4 * scale, 0, 6 * scale, 12 * scale);
+        var collider = Collider2.makeRect(Collider.Mask.npc, -4 * scale, 0, 6 * scale, 12 * scale);
 
         var mover = new Mover();
         mover.collider = collider;
@@ -216,7 +216,7 @@ public class Factory {
         entity.attach(position, Position.class);
         entity.attach(animator, Animator.class);
         entity.attach(mover, Mover.class);
-        entity.attach(collider, Collider.class);
+        entity.attach(collider, Collider2.class);
         entity.attach(debug, DebugRender.class);
         entity.attach(behavior, Component.class);
 
@@ -229,7 +229,7 @@ public class Factory {
         var halfWidth = w / 2f;
         var halfHeight = h / 2f;
         var position = new Position(x + halfWidth, y + halfHeight);
-        var collider = Collider.makeRect(Collider.Mask.solid, -halfWidth, -halfHeight, w, h);
+        var collider = Collider2.makeRect(Collider.Mask.solid, -halfWidth, -halfHeight, w, h);
         var patch = new Patch(assets, Patches.Type.PLAIN);
         patch.origin.set(halfWidth, halfHeight);
         patch.size.set(w, h);
@@ -237,7 +237,7 @@ public class Factory {
         var debug = DebugRender.makeForShapes(DebugRender.DRAW_POSITION_AND_COLLIDER);
 
         entity.attach(position, Position.class);
-        entity.attach(collider, Collider.class);
+        entity.attach(collider, Collider2.class);
         entity.attach(patch, Patch.class);
         entity.attach(debug, DebugRender.class);
 
