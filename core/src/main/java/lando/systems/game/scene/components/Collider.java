@@ -2,6 +2,7 @@ package lando.systems.game.scene.components;
 
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Rectangle;
+import lando.systems.game.math.Calc;
 import lando.systems.game.scene.framework.Component;
 import lando.systems.game.scene.framework.World;
 import lando.systems.game.utils.Util;
@@ -45,10 +46,8 @@ public class Collider extends Component {
         }
 
         // TODO(brian): better to use 'int value' for flexibility, can still check zero/non-zero
-        public record Tile(boolean state) {
-            public Tile() {
-                this(false);
-            }
+        public static class Tile {
+            public boolean state;
         }
     }
 
@@ -92,6 +91,24 @@ public class Collider extends Component {
         this.grid = new Grid(tileSize, cols, rows);
     }
 
+    public void gridSet(int x, int y, boolean state) {
+        if (grid == null) {
+            Util.log(TAG, "Collider.gridSet(%d, %d, %b) called on non-grid, ignored"
+                .formatted(x, y, state));
+            return;
+        }
+
+        if (!Calc.between(x, 0, grid.cols - 1)
+            || !Calc.between(y, 0, grid.rows - 1)) {
+            Util.log(TAG, "Collider.gridSet(%d, %d, %b) called with out of bounds coords, ignored"
+                .formatted(x, y, state));
+            return;
+        }
+
+        var index = x + y * grid.cols;
+        grid.tiles[index].state = state;
+    }
+
     // Implementation ---------------------------------------------------------
     // NOTE(brian): there's room for improvement in the API here,
     //  the addition of the Mover.collidesWith mask set should be the default way of running `check*()` family methods
@@ -102,7 +119,7 @@ public class Collider extends Component {
         var colliders = World.components.getComponents(Collider.class);
         for (var collider : colliders) {
             if (collider == this) continue;
-            if (!collider.active) continue;
+            if (collider.notActive()) continue;
             if (!masks.contains(collider.mask)) continue;
 
             if (this.overlaps(collider, xOffset, yOffset)) {
@@ -200,17 +217,94 @@ public class Collider extends Component {
     }
 
     public boolean overlapsRectGrid(Collider r, Collider g, int xOffset, int yOffset) {
-        var rect = r.rect;
-        var grid = g.circ;
-        // TODO...
-        return false;
+        if (r.rect == null || g.grid == null) {
+            Util.log(TAG, "overlapsRectGrid called for colliders with the wrong shapes");
+            return false;
+        }
+        var rows = g.grid.rows;
+        var cols = g.grid.cols;
+        var tileSize = g.grid.tileSize;
+
+        // obtain temp objects to work with
+        var rect = Util.rect.obtain().set(0, 0, 0, 0);
+        var grid = Util.rect.obtain().set(0, 0, 0, 0);
+        var rPos = Util.vec2.obtain().setZero();
+        var gPos = Util.vec2.obtain().setZero();
+
+        // use active position components attached to each entity, if any
+        var rPosition = r.entity.get(Position.class);
+        var gPosition = g.entity.get(Position.class);
+        if (rPosition != null && rPosition.active) rPos.set(rPosition.value);
+        if (gPosition != null && gPosition.active) gPos.set(gPosition.value);
+
+        // construct the rectangle relative to the grid
+        rect.set(
+            r.rect.x + rPos.x + xOffset - gPos.x,
+            r.rect.y + rPos.y + yOffset - gPos.y,
+            r.rect.width, r.rect.height);
+
+        // construct the rectangle describing the boundary of the grid
+        grid.set(gPos.x, gPos.y, cols * tileSize, rows * tileSize);
+
+        // only worth checking against the grid tiles if the rectangle is within the grid bounds
+        var overlaps = false;
+        if (rect.overlaps(grid)) {
+            // get the range of grid tiles that the rectangle overlaps on each axis
+            int left   = Calc.clampInt((int) Calc.floor(rect.x                   / (float) tileSize), 0, cols);
+            int right  = Calc.clampInt((int) Calc.ceiling((rect.x + rect.width)  / (float) tileSize), 0, cols);
+            int top    = Calc.clampInt((int) Calc.ceiling((rect.y + rect.height) / (float) tileSize), 0, rows);
+            int bottom = Calc.clampInt((int) Calc.floor(rect.y                   / (float) tileSize), 0, rows);
+
+            // check each tile in the possible overlap range for solidity
+            for (int y = bottom; y < top; y++) {
+                for (int x = left; x < right; x++) {
+                    var i = x + y * cols;
+                    var solid = g.grid.tiles[i].state;
+                    if (solid) {
+                        overlaps = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        Util.vec2.free(gPos);
+        Util.vec2.free(rPos);
+        Util.rect.free(grid);
+        Util.rect.free(rect);
+        return overlaps;
     }
 
     public boolean overlapsCircCirc(Collider a, Collider b, int xOffset, int yOffset) {
-        // a.circ;
-        // b.circ;
-        // TODO...
-        return false;
+        // obtain temp objects to work with
+        var aCirc = Util.circ.obtain();
+        var bCirc = Util.circ.obtain();
+        var aPos  = Util.vec2.obtain().setZero();
+        var bPos  = Util.vec2.obtain().setZero();
+
+        // use active position components attached to each entity, if any
+        var aPosition = a.entity.getIfActive(Position.class);
+        var bPosition = b.entity.getIfActive(Position.class);
+        if (aPosition != null) aPos.set(aPosition.value);
+        if (bPosition != null) bPos.set(bPosition.value);
+
+        // construct the source circle relative to the target circle
+        aCirc.set(
+            a.circ.x + aPos.x + xOffset - bPos.x,
+            a.circ.y + aPos.y + yOffset - bPos.y,
+            a.circ.radius);
+
+        bCirc.set(bPos.x, bPos.y, b.circ.radius);
+
+        // do they overlap?
+        var overlaps = aCirc.overlaps(bCirc);
+
+        // cleanup and return
+        Util.vec2.free(bPos);
+        Util.vec2.free(aPos);
+        Util.circ.free(bCirc);
+        Util.circ.free(aCirc);
+        return overlaps;
     }
 
     public boolean overlapsCircGrid(Collider c, Collider g, int xOffset, int yOffset) {

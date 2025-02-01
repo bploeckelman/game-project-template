@@ -25,6 +25,7 @@ public class Util {
 
     public static final Pool<Vector2> vec2 = Pools.get(Vector2.class, 500);
     public static final Pool<Rectangle> rect = Pools.get(Rectangle.class, 500);
+    public static final Pool<Circle> circ = Pools.get(Circle.class, 500);
 
     public static void free(Vector2... objects) {
         for (var object : objects) {
@@ -35,6 +36,12 @@ public class Util {
     public static void free(Rectangle... objects) {
         for (var object : objects) {
             Util.rect.free(object);
+        }
+    }
+
+    public static void free(Circle... objects) {
+        for (var object : objects) {
+            Util.circ.free(object);
         }
     }
 
