@@ -3,6 +3,8 @@ package lando.systems.game.scene.components;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.badlogic.gdx.utils.reflect.ClassReflection;
 import lando.systems.game.math.Calc;
 import lando.systems.game.scene.framework.ComponentFamily;
 import lando.systems.game.scene.framework.World;
@@ -59,6 +61,13 @@ public class Collider2 extends ComponentFamily {
     private Collider2(Mask mask, int tileSize, int cols, int rows) {
         this.mask = mask;
         this.shape = new GridShape(this, tileSize, cols, rows);
+    }
+
+    public <T extends Shape> T shape(Class<T> shapeClass) {
+        if (ClassReflection.isInstance(shapeClass, shape)) {
+            return shapeClass.cast(shape);
+        }
+        throw new GdxRuntimeException("Collider shape is not the specified type: " + shapeClass);
     }
 
     public boolean check(Mask mask) {
@@ -330,8 +339,8 @@ public class Collider2 extends ComponentFamily {
         }
 
         public void set(int x, int y, boolean solid) {
-            var inRangeX = !Calc.between(x, 0, cols - 1);
-            var inRangeY = !Calc.between(y, 0, rows - 1);
+            var inRangeX = Calc.between(x, 0, cols - 1);
+            var inRangeY = Calc.between(y, 0, rows - 1);
             if (!inRangeX || !inRangeY) {
                 Util.log(TAG, "Collider.grid.set(%d, %d, %b) called with out of bounds coords, ignored"
                     .formatted(x, y, solid));

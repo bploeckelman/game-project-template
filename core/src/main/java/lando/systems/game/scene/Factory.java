@@ -1,6 +1,8 @@
 package lando.systems.game.scene;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import lando.systems.game.assets.Anims;
 import lando.systems.game.assets.Assets;
@@ -114,7 +116,7 @@ public class Factory {
         var mover = new Mover();
         mover.collider = collider;
         mover.speed.setToRandomDirection().scl(speed);
-        mover.addCollidesWith(Collider.Mask.object);
+        mover.addCollidesWith(Collider.Mask.object, Collider.Mask.solid);
         mover.setOnHit((params) -> {
             // invert speed on the hit axis and add some squash/stretch
             switch (params.direction()) {
@@ -239,6 +241,26 @@ public class Factory {
         entity.attach(position, Position.class);
         entity.attach(collider, Collider2.class);
         entity.attach(patch, Patch.class);
+        entity.attach(debug, DebugRender.class);
+
+        return entity;
+    }
+
+    public static Entity map(float x, float y, String tmxFilePath, String solidLayerName, OrthographicCamera camera, SpriteBatch batch) {
+        var entity = World.entities.create();
+
+        var position = new Position(x, y);
+
+        var tilemap = new Tilemap(tmxFilePath, camera,  batch);
+        var collider = tilemap.makeGridCollider(solidLayerName);
+        var boundary = tilemap.makeBoundary();
+
+        var debug = DebugRender.makeForShapes(DebugRender.DRAW_POSITION_AND_COLLIDER);
+
+        entity.attach(position, Position.class);
+        entity.attach(collider, Collider2.class);
+        entity.attach(tilemap, Tilemap.class);
+        entity.attach(boundary, Boundary.class);
         entity.attach(debug, DebugRender.class);
 
         return entity;

@@ -86,7 +86,41 @@ public class DebugRender extends RenderableComponent {
                     shapes.setColor(Color.WHITE);
                     Util.free(circ);
                 }
-                case Collider2.GridShape shape -> Util.log("DebugRender", "collider type 'grid' not supported yet");
+                case Collider2.GridShape shape -> {
+                    var rect = Util.rect.obtain();
+
+                    var colorAlpha = color.cpy();
+                    colorAlpha.a = 0.75f;
+
+                    int numTiles = shape.cols * shape.rows;
+                    for (int i = 0; i < numTiles; i++) {
+                        var tile = shape.tiles[i];
+                        if (tile.solid) {
+                            int x = i % shape.cols;
+                            int y = i / shape.cols;
+                            int size = shape.tileSize;
+                            rect.set(
+                                position.x() + x * size,
+                                position.y() + y * size,
+                                size, size
+                            );
+                            shapes.filledRectangle(rect, colorAlpha);
+                        }
+                    }
+
+                    var boundary = collider.entity.get(Boundary.class);
+                    if (boundary != null) {
+                        var bounds = boundary.bounds;
+                        rect.set(
+                            position.x() + bounds.x,
+                            position.y() + bounds.y,
+                            bounds.width, bounds.height
+                        );
+                        shapes.rectangle(rect, Color.YELLOW, lineWidth);
+                    }
+
+                    Util.free(rect);
+                }
             }
         }
 

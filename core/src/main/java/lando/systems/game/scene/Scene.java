@@ -47,7 +47,18 @@ public class Scene<ScreenType extends BaseScreen> {
         bottom = Factory.boundary(margin + thickness, margin, width - 2 * margin - 2 * thickness, thickness);
         top = Factory.boundary(margin + thickness, height - margin - thickness, width - 2 * margin - 2 * thickness, thickness);
 
-        var simpleCircleTest = true;
+        var interior = new Rectangle(
+            margin + thickness,
+            margin + thickness,
+            width - 2 * (margin + thickness),
+            height - 2 * (margin + thickness)
+        );
+
+        var tmxFilePath = "maps/home.tmx";
+        var solidLayerName = "solid";
+        Factory.map(interior.x, interior.y, tmxFilePath, solidLayerName, camera, screen.batch);
+
+        var simpleCircleTest = false;
         if (simpleCircleTest) {
             var l = Factory.circle(centerX - 200f, centerY, 10f);
             var r = Factory.circle(centerX + 200f, centerY, 10f);
@@ -60,11 +71,6 @@ public class Scene<ScreenType extends BaseScreen> {
             u.get(Mover.class).speed.set(0f, -300f);
         } else {
             var numCircles = 10;
-            var interior = new Rectangle(
-                margin + thickness,
-                margin + thickness,
-                width - 2 * (margin + thickness),
-                height - 2 * (margin + thickness));
             for (int i = 0; i < numCircles; i++) {
                 var radius = MathUtils.random(5f, 20f);
                 var x = MathUtils.random(interior.x + radius, interior.x + interior.width - radius);
