@@ -177,28 +177,33 @@ public class Collider extends ComponentFamily {
 
                 Util.free(bCirc);
             } else if (other.shape instanceof GridShape otherGrid) {
-                var gridBounds = Util.rect.obtain().set(0, 0, 0, 0);
-
                 var rows = otherGrid.rows;
                 var cols = otherGrid.cols;
                 var tileSize = otherGrid.tileSize;
 
-                // adjust this shape's rectangle to be positioned relative to the grid
-                aRect.setPosition(
-                    rect.x + aPos.x + xOffset - bPos.x,
-                    rect.y + aPos.y + yOffset - bPos.y
-                );
-
                 // construct the rectangle describing the boundary of the grid
-                gridBounds.set(bPos.x, bPos.y, cols * tileSize, rows * tileSize);
+                var gridBounds = Util.rect.obtain().set(
+                    bPos.x, bPos.y,
+                    cols * tileSize,
+                    rows * tileSize
+                );
 
                 // only worth checking against the grid tiles if the rectangle is within the grid bounds
                 if (aRect.overlaps(gridBounds)) {
+                    // calc the rectangular extents of the rectangle relative to the grid (instead of relative to the world)
+                    // this is needed so that we can determine what horiz/vert ranges of tiles could have an overlap
+                    var rectRelativeX = rect.x + aPos.x + xOffset - bPos.x;
+                    var rectRelativeY = rect.y + aPos.y + yOffset - bPos.y;
+                    var rectLeft   = rectRelativeX;
+                    var rectRight  = rectRelativeX + rect.width;
+                    var rectTop    = rectRelativeY + rect.height;
+                    var rectBottom = rectRelativeY;
+
                     // get the range of grid tiles that the rectangle overlaps on each axis
-                    int left   = Calc.clampInt((int) Calc.floor(aRect.x                    / (float) tileSize), 0, cols);
-                    int right  = Calc.clampInt((int) Calc.ceiling((aRect.x + aRect.width)  / (float) tileSize), 0, cols);
-                    int top    = Calc.clampInt((int) Calc.ceiling((aRect.y + aRect.height) / (float) tileSize), 0, rows);
-                    int bottom = Calc.clampInt((int) Calc.floor(aRect.y                    / (float) tileSize), 0, rows);
+                    int left   = Calc.clampInt((int) Calc.floor  (rectLeft   / (float) tileSize), 0, cols);
+                    int right  = Calc.clampInt((int) Calc.ceiling(rectRight  / (float) tileSize), 0, cols);
+                    int top    = Calc.clampInt((int) Calc.ceiling(rectTop    / (float) tileSize), 0, rows);
+                    int bottom = Calc.clampInt((int) Calc.floor  (rectBottom / (float) tileSize), 0, rows);
 
                     // check each tile in the possible overlap range for solidity
                     for (int y = bottom; y < top; y++) {
