@@ -61,10 +61,10 @@ public class DebugRender extends RenderableComponent {
         // draw collider
         var color = Color.MAGENTA;
         var lineWidth = 1f;
-        var collider = entity.get(Collider2.class);
+        var collider = entity.get(Collider.class);
         if (collider != null) {
             switch (collider.shape) {
-                case Collider2.RectShape shape -> {
+                case Collider.RectShape shape -> {
                     var rect = Util.rect.obtain().set(
                         shape.rect.x + position.x(),
                         shape.rect.y + position.y(),
@@ -74,7 +74,7 @@ public class DebugRender extends RenderableComponent {
                     shapes.rectangle(rect, color, lineWidth);
                     Util.free(rect);
                 }
-                case Collider2.CircShape shape -> {
+                case Collider.CircShape shape -> {
                     var circ = Util.circ.obtain();
                     circ.set(
                         shape.circ.x + position.x(),
@@ -86,7 +86,7 @@ public class DebugRender extends RenderableComponent {
                     shapes.setColor(Color.WHITE);
                     Util.free(circ);
                 }
-                case Collider2.GridShape shape -> {
+                case Collider.GridShape shape -> {
                     var rect = Util.rect.obtain();
 
                     var colorAlpha = color.cpy();

@@ -55,11 +55,11 @@ public class Tilemap extends RenderableComponent {
         this.tileSize = props.get("tilewidth", Integer.class);
     }
 
-    public Collider2 makeGridCollider(String layerName) {
+    public Collider makeGridCollider(String layerName) {
         var layer = map.getLayers().get(layerName);
         if (layer instanceof TiledMapTileLayer solidLayer) {
-            var collider = Collider2.makeGrid(Collider.Mask.solid, tileSize, cols, rows);
-            var grid = collider.shape(Collider2.GridShape.class);
+            var collider = Collider.makeGrid(Collider.Mask.solid, tileSize, cols, rows);
+            var grid = collider.shape(Collider.GridShape.class);
             for (int y = 0; y < rows; y++) {
                 for (int x = 0; x < cols; x++) {
                     var isSolid = (null != solidLayer.getCell(x, y));

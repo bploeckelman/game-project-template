@@ -13,6 +13,7 @@ public class Mover extends Component {
 
     private final Vector2 remainder = new Vector2();
 
+    // TODO(brian): should the default be 'only solid' or should it be 'none'?
     /**
      * Specifies {@link Collider.Mask} types should be
      * checked for possible collisions. Defaults to {@link Collider.Mask#solid},
@@ -21,14 +22,14 @@ public class Mover extends Component {
      */
     private final EnumSet<Collider.Mask> collidesWith = EnumSet.of(Collider.Mask.solid);
 
-    public Collider2 collider;
+    public Collider collider;
     public Callbacks.TypedArg<OnHitParams> onHitX;
     public Callbacks.TypedArg<OnHitParams> onHitY;
     public Vector2 speed;
     public float gravity;
     public float friction;
 
-    public record OnHitParams(Collider2 hitCollider, Direction.Relative direction)
+    public record OnHitParams(Collider hitCollider, Direction.Relative direction)
         implements Callbacks.TypedArg.Params {
     }
 
