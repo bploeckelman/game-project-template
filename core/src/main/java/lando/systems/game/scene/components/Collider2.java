@@ -264,22 +264,25 @@ public class Collider2 extends ComponentFamily {
                 var cols = otherGrid.cols;
                 var tileSize = otherGrid.tileSize;
 
-                // adjust this shape's circle to be positioned relative to the grid
-                aCirc.setPosition(
-                    circ.x + aPos.x + xOffset - bPos.x,
-                    circ.y + aPos.y + yOffset - bPos.y
-                );
-
                 // construct the rectangle describing the boundary of the grid
                 gridBounds.set(bPos.x, bPos.y, cols * tileSize, rows * tileSize);
 
                 // only worth checking against the grid tiles if the circle is within the grid bounds
                 if (Intersector.overlaps(aCirc, gridBounds)) {
+                    // calc the rectangular extents of the circle relative to the grid (instead of relative to the world)
+                    // this is needed so that we can determine what horiz/vert ranges of tiles could have an overlap
+                    var circRelativeX = circ.x + aPos.x + xOffset - bPos.x;
+                    var circRelativeY = circ.y + aPos.y + yOffset - bPos.y;
+                    var circLeft   = circRelativeX - circ.radius;
+                    var circRight  = circRelativeX + circ.radius;
+                    var circTop    = circRelativeY + circ.radius;
+                    var circBottom = circRelativeY - circ.radius;
+
                     // get the range of grid tiles that the circle overlaps on each axis
-                    int left   = Calc.clampInt((int) Calc.floor(  (aCirc.x - aCirc.radius) / (float) tileSize), 0, cols);
-                    int right  = Calc.clampInt((int) Calc.ceiling((aCirc.x + aCirc.radius) / (float) tileSize), 0, cols);
-                    int top    = Calc.clampInt((int) Calc.ceiling((aCirc.y + aCirc.radius) / (float) tileSize), 0, rows);
-                    int bottom = Calc.clampInt((int) Calc.floor(  (aCirc.y - aCirc.radius) / (float) tileSize), 0, rows);
+                    int left   = Calc.clampInt((int) Calc.floor(  circLeft   / (float) tileSize), 0, cols);
+                    int right  = Calc.clampInt((int) Calc.ceiling(circRight  / (float) tileSize), 0, cols);
+                    int top    = Calc.clampInt((int) Calc.ceiling(circTop    / (float) tileSize), 0, rows);
+                    int bottom = Calc.clampInt((int) Calc.floor(  circBottom / (float) tileSize), 0, rows);
 
                     // check each tile in the possible overlap range for solidity
                     var tileRect = Util.rect.obtain();
@@ -293,11 +296,11 @@ public class Collider2 extends ComponentFamily {
                                     gridBounds.y + y * tileSize,
                                     tileSize, tileSize
                                 );
+
                                 overlaps = Intersector.overlaps(aCirc, tileRect);
                                 if (overlaps) {
                                     break;
                                 }
-
                             }
                         }
                     }
@@ -352,7 +355,7 @@ public class Collider2 extends ComponentFamily {
 
         @Override
         public boolean overlaps(Collider2 other, int xOffset, int yOffset) {
-            throw new UnsupportedOperationException("grid-* overlap checks are not supported");
+            throw new UnsupportedOperationException("grid->* overlap checks are not supported, such checks should go in the other direction");
         }
     }
 }
