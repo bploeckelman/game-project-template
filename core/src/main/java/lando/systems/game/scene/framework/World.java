@@ -2,7 +2,9 @@ package lando.systems.game.scene.framework;
 
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntMap;
+import lando.systems.game.scene.Scene;
 import lando.systems.game.scene.framework.families.RenderableComponent;
+import lando.systems.game.screens.BaseScreen;
 import lando.systems.game.utils.Util;
 
 import java.util.Arrays;
@@ -13,20 +15,16 @@ import java.util.stream.Stream;
 
 /**
  * Container for {@link Entity} and {@link Component} instances.
- * Operations on entities and components can be globally accessed via the facade implementations:
- * {@link World#entities}, {@link World#components}, and {@link World#families}.
  */
-public class World implements Facade.Entities, Facade.Components, Facade.Families {
+public class World<ScreenType extends BaseScreen> {
 
     private static final String TAG = World.class.getSimpleName();
 
     // ------------------------------------------------------------------------
-    // Static Facade instances
+    // Fields
     // ------------------------------------------------------------------------
 
-    public static Facade.Entities entities;
-    public static Facade.Components components;
-    public static Facade.Families families;
+    public final Scene<ScreenType> scene;
 
     // ------------------------------------------------------------------------
     // Internal collections
@@ -37,10 +35,8 @@ public class World implements Facade.Entities, Facade.Components, Facade.Familie
     private final Map<Class<? extends Component>, Array<? extends Component>> componentsByClass = new HashMap<>();
     private final Map<Class<? extends ComponentFamily>, Array<? extends Component>> componentsByFamilyClass = new HashMap<>();
 
-    public World() {
-        World.entities = this;
-        World.components = this;
-        World.families = this;
+    public World(Scene<ScreenType> scene) {
+        this.scene = scene;
     }
 
     /**
@@ -58,7 +54,7 @@ public class World implements Facade.Entities, Facade.Components, Facade.Familie
     }
 
     // ------------------------------------------------------------------------
-    // Facade.Entities implementation
+    // Entity methods
     // ------------------------------------------------------------------------
 
     /**
@@ -67,7 +63,6 @@ public class World implements Facade.Entities, Facade.Components, Facade.Familie
      * @param id the integer id of the requested entity
      * @return optional containing the entity instance if found, empty optional otherwise
      */
-    @Override
     public Optional<Entity> get(int id) {
         var entity = entitiesById.get(id);
         if (entity == null) {
@@ -80,9 +75,8 @@ public class World implements Facade.Entities, Facade.Components, Facade.Familie
      * Instantiate a new {@link Entity}
      * TODO(brian): add pooling
      */
-    @Override
-    public Entity create() {
-        var entity = new Entity();
+    public Entity create(Scene<ScreenType> scene) {
+        var entity = new Entity(scene);
         entitiesById.put(entity.id, entity);
         return entity;
     }
@@ -91,7 +85,6 @@ public class World implements Facade.Entities, Facade.Components, Facade.Familie
      * Destroys the specified {@link Entity} along with any attached {@link Component} instances
      * TODO(brian): add pooling
      */
-    @Override
     public void destroy(Entity entity) {
         if (entity == null) {
             Util.log(TAG, "destroy() called with null Entity value");
@@ -104,8 +97,9 @@ public class World implements Facade.Entities, Facade.Components, Facade.Familie
         }
 
         // detach and destroy all components attached to this entity
-        entity.componentsByClass.values()
-            .forEach(component -> destroy(component, component.getClass()));
+        var components = entity.componentsByClass.values().stream().toList();
+        entity.componentsByClass.clear();
+        components.forEach(component -> destroy(component, component.getClass()));
 
         // remove the entity itself
         entitiesById.remove(entity.id);
@@ -124,13 +118,12 @@ public class World implements Facade.Entities, Facade.Components, Facade.Familie
     }
 
     // ------------------------------------------------------------------------
-    // ComponentFacade implementation
+    // Component methods
     // ------------------------------------------------------------------------
 
     /**
      * Get a {@link Stream<Component>} of all components in the world
      */
-    @Override
     public Stream<Component> stream() {
         return componentsByClass.values().stream()
             .flatMap(array -> Arrays.stream(array.items));
@@ -143,13 +136,14 @@ public class World implements Facade.Entities, Facade.Components, Facade.Familie
      * @param <C>   generic type of the component to get
      * @return non-null array containing all components of the given type, if any
      */
-    @Override
     @SuppressWarnings("unchecked")
     public <C extends Component> Array<C> getComponents(Class<C> clazz) {
         if (!componentClasses.contains(clazz, true)) {
             componentClasses.add(clazz);
         }
-        return (Array<C>) componentsByClass.computeIfAbsent(clazz, (key) -> new Array<>());
+
+        componentsByClass.putIfAbsent(clazz, new Array<>());
+        return (Array<C>) componentsByClass.get(clazz);
     }
 
     /**
@@ -159,7 +153,6 @@ public class World implements Facade.Entities, Facade.Components, Facade.Familie
      * @param clazz     the {@link Class} of the {@link Component} to add (eg. {@code MyComponent.class})
      * @param <C>       generic type of the component to add
      */
-    @Override
     public <C extends Component> void add(Component component, Class<C> clazz) {
         // validate that there's a component to add
         if (component == null) {
@@ -172,13 +165,6 @@ public class World implements Facade.Entities, Facade.Components, Facade.Familie
             Util.log(TAG, "add(): component %s is not of the specified class %s, ignoring"
                 .formatted(component.getClass().getSimpleName(), clazz.getSimpleName()));
             return;
-        }
-
-        // ensure that the component isn't already attached to an entity before adding
-        if (component.entity != Entity.NONE) {
-            Util.log(TAG, "add(): component %s already attached to entity %d, detaching first"
-                .formatted(clazz.getSimpleName(), component.entity.id));
-            component.entity.detach(clazz);
         }
 
         // add by family if applicable
@@ -200,7 +186,6 @@ public class World implements Facade.Entities, Facade.Components, Facade.Familie
      * @param clazz     the {@link Class} of the {@link Component} to destroy (eg. {@code MyComponent.class})
      * @param <C>       generic type of the component to destroy
      */
-    @Override
     public <C extends Component> void destroy(Component component, Class<C> clazz) {
         // validate that there's a component to destroy
         if (component == null) {
@@ -218,7 +203,8 @@ public class World implements Facade.Entities, Facade.Components, Facade.Familie
         // ensure that the component is detached from its entity before destroying
         var entity = component.entity;
         if (entity != Entity.NONE) {
-            Util.log(TAG, "destroy(): component attached to entity %d, detaching first".formatted(entity.id));
+            Util.log(TAG, "destroy(%s): component attached to entity %d, detaching first"
+                .formatted(component.getClass().getSimpleName(), entity.id));
             entity.detach(clazz);
         }
 
@@ -245,7 +231,6 @@ public class World implements Facade.Entities, Facade.Components, Facade.Familie
      * @param <F>   generic type of the family to get
      * @return non-null array containing all components of the given family, if any
      */
-    @Override
     @SuppressWarnings("unchecked")
     public <F extends ComponentFamily> Array<F> getFamily(Class<F> clazz) {
         return (Array<F>) componentsByFamilyClass.computeIfAbsent(clazz, (key) -> new Array<>());

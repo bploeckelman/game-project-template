@@ -15,8 +15,6 @@ public class GameScreen extends BaseScreen {
 
     private final Color backgroundColor = new Color(0x131711ff);
 
-    private final Scene<GameScreen> scene;
-
     public GameScreen() {
         this.scene = new Scene<>(this);
     }

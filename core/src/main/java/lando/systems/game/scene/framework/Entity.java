@@ -1,6 +1,9 @@
 package lando.systems.game.scene.framework;
 
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import lando.systems.game.scene.Scene;
+import lando.systems.game.screens.BaseScreen;
 import lando.systems.game.utils.Util;
 
 import java.util.HashMap;
@@ -13,6 +16,10 @@ public class Entity {
     // Fixed values indicating 'no entity' for components that are not attached to any specific entity
     public static final int NONE_ID = 0;
     public static final Entity NONE = new Entity(NONE_ID);
+    public static final class NoneScreen extends BaseScreen {
+        @Override
+        public void render(SpriteBatch batch) {}
+    }
 
     /**
      * Internal counter used for assigning globally unique {@link Entity#id} values to new entities
@@ -29,6 +36,11 @@ public class Entity {
     final Map<Class<? extends Component>, Component> componentsByClass = new HashMap<>();
 
     /**
+     * Reference to the {@link Scene} that contains this {@link Entity} in it's {@link World}
+     */
+    public final Scene<? extends BaseScreen> scene;
+
+    /**
      * Globally unique id for this {@link Entity} instance
      */
     public final int id;
@@ -39,9 +51,10 @@ public class Entity {
     public boolean active;
 
     /**
-     * Package-private constructor limiting {@link Entity} creation to {@link World#create()}
+     * Package-private constructor limiting {@link Entity} creation
      */
-    Entity() {
+    Entity(Scene<? extends BaseScreen> scene) {
+        this.scene = scene;
         this.id = NEXT_ID++;
         this.active = true;
     }
@@ -54,6 +67,7 @@ public class Entity {
             throw new GdxRuntimeException(TAG + ": Usage error, Entity(int) is only for instantiating Entity.NONE");
         }
 
+        this.scene = new Scene<>(new NoneScreen());
         this.id = noneId;
         this.active = false;
     }
@@ -94,7 +108,7 @@ public class Entity {
      * @param clazz     the {@link Class} of the {@link Component} to attach (eg. {@code MyComponent.class})
      * @param <C>       generic type of the component to attach
      */
-    public <C extends Component> void attach(C component, Class<C> clazz) {
+    public <C extends Component> void attach(Component component, Class<C> clazz) {
         var existing = componentsByClass.get(clazz);
         if (existing != null) {
             component.entity = NONE;
@@ -130,7 +144,7 @@ public class Entity {
      * @param clazz     the {@link Class} of the {@link Component} to replace (eg. {@code MyComponent.class})
      * @param <C>       generic type of the component to replace
      */
-    public <C extends Component> void replace(C component, Class<C> clazz) {
+    public <C extends Component> void replace(Component component, Class<C> clazz) {
         destroy(clazz);
         attach(component, clazz);
     }
@@ -145,7 +159,7 @@ public class Entity {
     public <C extends Component> void destroy(Class<C> clazz) {
         var component = detach(clazz);
         if (component != null) {
-            World.components.destroy(component, clazz);
+            scene.world.destroy(component, clazz);
         }
     }
 
@@ -157,7 +171,7 @@ public class Entity {
         Util.log(TAG, "Removing all components from entity %d!".formatted(id));
         componentsByClass.forEach((clazz, component) -> {
             detach(clazz);
-            World.components.destroy(component, clazz);
+            scene.world.destroy(component, clazz);
         });
         componentsByClass.clear();
     }

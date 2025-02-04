@@ -10,6 +10,7 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import lando.systems.game.scene.framework.Entity;
 import lando.systems.game.scene.framework.families.RenderableComponent;
 
 import java.util.List;
@@ -38,7 +39,8 @@ public class Tilemap extends RenderableComponent {
 
     public OrthographicCamera camera;
 
-    public Tilemap(String tmxFilePath, OrthographicCamera camera, SpriteBatch batch) {
+    public Tilemap(Entity entity, String tmxFilePath, OrthographicCamera camera, SpriteBatch batch) {
+        super(entity);
         this.camera = camera;
         this.map = (new TmxMapLoader()).load(tmxFilePath, params);
         this.renderer = new OrthogonalTiledMapRenderer(map, UNIT_SCALE, batch);
@@ -58,7 +60,7 @@ public class Tilemap extends RenderableComponent {
     public Collider makeGridCollider(String layerName) {
         var layer = map.getLayers().get(layerName);
         if (layer instanceof TiledMapTileLayer solidLayer) {
-            var collider = Collider.makeGrid(Collider.Mask.solid, tileSize, cols, rows);
+            var collider = Collider.makeGrid(entity, Collider.Mask.solid, tileSize, cols, rows);
             var grid = collider.shape(Collider.GridShape.class);
             for (int y = 0; y < rows; y++) {
                 for (int x = 0; x < cols; x++) {
@@ -73,7 +75,7 @@ public class Tilemap extends RenderableComponent {
 
     public Boundary makeBoundary() {
         var bounds = calcBounds();
-        return new Boundary(bounds);
+        return new Boundary(entity, bounds);
     }
 
     public Rectangle calcBounds() {

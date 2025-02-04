@@ -18,11 +18,16 @@ import space.earlygrey.shapedrawer.ShapeDrawer;
 public class Scene<ScreenType extends BaseScreen> {
 
     public final ScreenType screen;
-    public final World world;
+    public final World<ScreenType> world;
 
     public Scene(ScreenType screen) {
         this.screen = screen;
-        this.world = screen.world;
+        this.world = new World<>(this);
+
+        // NOTE(brian): everything from here to the end of the c'tor is 'scene-specific'
+        //  ie. creating and configuring a bunch of entities from their factory methods
+        //  should be done in subclasses of Scene, for games that have more than one scene
+        //  ------------------------------------------------------------------------------
 
         var margin = 50f;
         var thickness = 20f;
@@ -32,15 +37,15 @@ public class Scene<ScreenType extends BaseScreen> {
         var centerX = width / 2;
         var centerY = height / 2;
 
-        Factory.heart(centerX, centerY);
-        Factory.hero(centerX, height * (2f / 3f));
+        EntityFactory.heart(this, centerX, centerY);
+        EntityFactory.hero(this, centerX, height * (2f / 3f));
 
         // NOTE(brian): this is a clunky way to setup an enclosed region
         //  of colliders, but it works well enough for testing purposes
-        Factory.boundary(margin, margin, thickness, height - 2 * margin);
-        Factory.boundary(width - margin - thickness, margin, thickness, height - 2 * margin);
-        Factory.boundary(margin + thickness, margin, width - 2 * margin - 2 * thickness, thickness);
-        Factory.boundary(margin + thickness, height - margin - thickness, width - 2 * margin - 2 * thickness, thickness);
+        EntityFactory.boundary(this, margin, margin, thickness, height - 2 * margin);
+        EntityFactory.boundary(this, width - margin - thickness, margin, thickness, height - 2 * margin);
+        EntityFactory.boundary(this, margin + thickness, margin, width - 2 * margin - 2 * thickness, thickness);
+        EntityFactory.boundary(this, margin + thickness, height - margin - thickness, width - 2 * margin - 2 * thickness, thickness);
 
         var interior = new Rectangle(
             margin + thickness,
@@ -51,28 +56,28 @@ public class Scene<ScreenType extends BaseScreen> {
 
         var tmxFilePath = "maps/home.tmx";
         var solidLayerName = "solid";
-        Factory.map(interior.x, interior.y, tmxFilePath, solidLayerName, camera, screen.batch);
+        EntityFactory.map(this, interior.x, interior.y, tmxFilePath, solidLayerName);
 
         enum CollisionTests { SIMPLE, TILE_GRID, MANY }
         var collisionTest = CollisionTests.TILE_GRID;
         switch (collisionTest) {
             case SIMPLE: {
                 // test pairs of circles bouncing off each other and the boundary walls
-                var l = Factory.circle(centerX - 200f, centerY, 10f);
-                var r = Factory.circle(centerX + 200f, centerY, 10f);
+                var l = EntityFactory.circle(this, centerX - 200f, centerY, 10f);
+                var r = EntityFactory.circle(this, centerX + 200f, centerY, 10f);
                 l.get(Mover.class).speed.set( 300f, 0f);
                 r.get(Mover.class).speed.set(-300f, 0f);
 
-                var d = Factory.circle(centerX, centerY - 100f, 10f);
-                var u = Factory.circle(centerX, centerY + 100f, 10f);
+                var d = EntityFactory.circle(this, centerX, centerY - 100f, 10f);
+                var u = EntityFactory.circle(this, centerX, centerY + 100f, 10f);
                 d.get(Mover.class).speed.set(0f,  300f);
                 u.get(Mover.class).speed.set(0f, -300f);
             } break;
             case TILE_GRID: {
                 // test colliding with a grid-shaped collider from a tilemap component
-                var vert = Factory.circle(centerX - 420f, centerY + 100f, 10f);
-                var horz = Factory.circle(centerX + 200f, centerY - 260f, 10f);
-                var diag = Factory.circle(centerX, centerY, 5f);
+                var vert = EntityFactory.circle(this, centerX - 420f, centerY + 100f, 10f);
+                var horz = EntityFactory.circle(this, centerX + 200f, centerY - 260f, 10f);
+                var diag = EntityFactory.circle(this, centerX, centerY, 5f);
                 vert.get(Mover.class).speed.set(0, -300f);
                 horz.get(Mover.class).speed.set(-300f, 0f);
                 diag.get(Mover.class).speed.set(-270f, -200f);
@@ -84,10 +89,14 @@ public class Scene<ScreenType extends BaseScreen> {
                     var radius = MathUtils.random(5f, 20f);
                     var x = MathUtils.random(interior.x + radius, interior.x + interior.width - radius);
                     var y = MathUtils.random(interior.y + radius, interior.y + interior.height - radius);
-                    Factory.circle(x, y, radius);
+                    EntityFactory.circle(this, x, y, radius);
                 }
             } break;
         }
+    }
+
+    public Entity createEntity() {
+        return world.create(this);
     }
 
     public void update(float dt) {

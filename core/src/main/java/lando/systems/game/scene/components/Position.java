@@ -3,24 +3,27 @@ package lando.systems.game.scene.components;
 import com.badlogic.gdx.math.Vector2;
 import com.github.tommyettinger.gdcrux.PointF2;
 import lando.systems.game.scene.framework.Component;
+import lando.systems.game.scene.framework.Entity;
 
-public class Position extends Component {
+public final class Position extends Component {
 
     public final PointF2 value;
 
-    public Position() {
-        this(0, 0);
+    public Position(Entity entity) {
+        this(entity, 0, 0);
     }
 
-    public Position(Vector2 value) {
-        this(value.x, value.y);
+    public Position(Entity entity, Vector2 value) {
+        this(entity, value.x, value.y);
     }
 
-    public Position(int x, int y) {
+    public Position(Entity entity, int x, int y) {
+        super(entity);
         this.value = new PointF2(x, y);
     }
 
-    public Position(float x, float y) {
+    public Position(Entity entity, float x, float y) {
+        super(entity);
         this.value = new PointF2(x, y);
     }
 

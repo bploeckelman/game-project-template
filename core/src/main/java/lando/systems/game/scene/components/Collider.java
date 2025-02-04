@@ -6,13 +6,13 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.reflect.ClassReflection;
 import lando.systems.game.math.Calc;
-import lando.systems.game.scene.framework.ComponentFamily;
-import lando.systems.game.scene.framework.World;
+import lando.systems.game.scene.framework.Component;
+import lando.systems.game.scene.framework.Entity;
 import lando.systems.game.utils.Util;
 
 import java.util.EnumSet;
 
-public class Collider extends ComponentFamily {
+public class Collider extends Component {
 
     private static final String TAG = Collider.class.getSimpleName();
 
@@ -37,38 +37,41 @@ public class Collider extends ComponentFamily {
     // Factory methods and private constructors
     // ------------------------------------------------------------------------
 
-    public static Collider makeRect(Mask mask, float x, float y, float w, float h) {
+    public static Collider makeRect(Entity entity, Mask mask, float x, float y, float w, float h) {
         if (w <= 0 || h <= 0) {
             Util.log(TAG, "WARN: collider created with degenerate shape size");
         }
-        return new Collider(mask, x, y, w, h);
+        return new Collider(entity, mask, x, y, w, h);
     }
 
-    public static Collider makeCirc(Mask mask, float x, float y, float radius) {
+    public static Collider makeCirc(Entity entity, Mask mask, float x, float y, float radius) {
         if (radius <= 0) {
             Util.log(TAG, "WARN: collider created with degenerate shape size");
         }
-        return new Collider(mask, x, y, radius);
+        return new Collider(entity, mask, x, y, radius);
     }
 
-    public static Collider makeGrid(Mask mask, int tileSize, int cols, int rows) {
+    public static Collider makeGrid(Entity entity, Mask mask, int tileSize, int cols, int rows) {
         if (tileSize <= 0 || cols <= 0 || rows <= 0) {
             Util.log(TAG, "WARN: collider created with degenerate shape size");
         }
-        return new Collider(mask, tileSize, cols, rows);
+        return new Collider(entity, mask, tileSize, cols, rows);
     }
 
-    private Collider(Mask mask, float x, float y, float w, float h) {
+    private Collider(Entity entity, Mask mask, float x, float y, float w, float h) {
+        super(entity);
         this.mask = mask;
         this.shape = new RectShape(this, x, y, w, h);
     }
 
-    private Collider(Mask mask, float x, float y, float radius) {
+    private Collider(Entity entity, Mask mask, float x, float y, float radius) {
+        super(entity);
         this.mask = mask;
         this.shape = new CircShape(this, x, y, radius);
     }
 
-    private Collider(Mask mask, int tileSize, int cols, int rows) {
+    private Collider(Entity entity, Mask mask, int tileSize, int cols, int rows) {
+        super(entity);
         this.mask = mask;
         this.shape = new GridShape(this, tileSize, cols, rows);
     }
@@ -94,10 +97,10 @@ public class Collider extends ComponentFamily {
     }
 
     public Collider checkAndGet(Mask mask, int xOffset, int yOffset) {
-        var colliders = World.components.getComponents(Collider.class);
+        var colliders = entity.scene.world.getComponents(Collider.class);
         for (var other : colliders) {
             if (other == this) continue;
-            if (other.notActive()) continue;
+            if (other.inactive()) continue;
             if (mask != other.mask) continue;
 
             if (shape.overlaps(other, xOffset, yOffset)) {
@@ -108,10 +111,10 @@ public class Collider extends ComponentFamily {
     }
 
     public Collider checkAndGet(EnumSet<Mask> masks, int xOffset, int yOffset) {
-        var colliders = World.components.getComponents(Collider.class);
+        var colliders = entity.scene.world.getComponents(Collider.class);
         for (var other : colliders) {
             if (other == this) continue;
-            if (other.notActive()) continue;
+            if (other.inactive()) continue;
             if (!masks.contains(other.mask)) continue;
 
             if (shape.overlaps(other, xOffset, yOffset)) {

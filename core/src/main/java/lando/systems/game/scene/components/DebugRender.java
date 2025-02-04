@@ -11,9 +11,13 @@ import space.earlygrey.shapedrawer.ShapeDrawer;
 
 public class DebugRender extends RenderableComponent {
 
+    // TODO(brian): update to leverage Shape component for some of these
+
     // ------------------------------------------------------------------------
     // Inner types and constants
     // ------------------------------------------------------------------------
+
+    private static final boolean DRAW_FILLED = false;
 
     /**
      * Base class for optional render callback parameters. Extend this class
@@ -53,14 +57,17 @@ public class DebugRender extends RenderableComponent {
      */
     public static final Callbacks.TypedArg<Params> DRAW_POSITION_AND_COLLIDER = (params) -> {
         var shapes = params.shapes;
+        if (params.self == null) return; // TODO(brian): related to a bug here where field isn't always set even though it should be
         var entity = params.self.entity;
         if (entity == Entity.NONE) return;
         var position = entity.get(Position.class);
         if (position == null) return;
 
-        // draw collider
         var color = Color.MAGENTA;
-        var lineWidth = 1f;
+        var colorFill = color.cpy(); colorFill.a = 0.25f;
+        var lineWidth = 1.5f;
+
+        // draw collider
         var collider = entity.get(Collider.class);
         if (collider != null) {
             switch (collider.shape) {
@@ -71,7 +78,11 @@ public class DebugRender extends RenderableComponent {
                         shape.rect.width,
                         shape.rect.height
                     );
-                    shapes.rectangle(rect, color, lineWidth);
+                    if (DRAW_FILLED) {
+                        shapes.filledRectangle(rect, colorFill);
+                    } else {
+                        shapes.rectangle(rect, color, lineWidth);
+                    }
                     Util.free(rect);
                 }
                 case Collider.CircShape shape -> {
@@ -81,16 +92,19 @@ public class DebugRender extends RenderableComponent {
                         shape.circ.y + position.y(),
                         shape.circ.radius
                     );
-                    shapes.setColor(Color.YELLOW);
-                    shapes.circle(circ.x, circ.y, circ.radius, lineWidth);
-                    shapes.setColor(Color.WHITE);
+                    if (DRAW_FILLED) {
+                        shapes.setColor(0f, 1f, 1f, 0.5f);
+                        shapes.filledCircle(circ.x, circ.y, circ.radius);
+                        shapes.setColor(Color.WHITE);
+                    } else {
+                        shapes.setColor(Color.YELLOW);
+                        shapes.circle(circ.x, circ.y, circ.radius, lineWidth);
+                        shapes.setColor(Color.WHITE);
+                    }
                     Util.free(circ);
                 }
                 case Collider.GridShape shape -> {
                     var rect = Util.rect.obtain();
-
-                    var colorAlpha = color.cpy();
-                    colorAlpha.a = 0.75f;
 
                     int numTiles = shape.cols * shape.rows;
                     for (int i = 0; i < numTiles; i++) {
@@ -104,19 +118,24 @@ public class DebugRender extends RenderableComponent {
                                 position.y() + y * size,
                                 size, size
                             );
-                            shapes.filledRectangle(rect, colorAlpha);
+                            if (DRAW_FILLED) {
+                                shapes.filledRectangle(rect, colorFill);
+                            } else {
+                                shapes.rectangle(rect, color, lineWidth);
+                            }
                         }
                     }
 
                     var boundary = collider.entity.get(Boundary.class);
                     if (boundary != null) {
-                        var bounds = boundary.bounds;
-                        rect.set(
-                            position.x() + bounds.x,
-                            position.y() + bounds.y,
-                            bounds.width, bounds.height
-                        );
-                        shapes.rectangle(rect, Color.YELLOW, lineWidth);
+                        rect.set(boundary.bounds);
+                        if (DRAW_FILLED) {
+                            shapes.setColor(1f, 1f, 0f, 0.1f);
+                            shapes.filledRectangle(rect);
+                            shapes.setColor(Color.WHITE);
+                        } else {
+                            shapes.rectangle(rect, Color.YELLOW, lineWidth);
+                        }
                     }
 
                     Util.free(rect);
@@ -135,8 +154,7 @@ public class DebugRender extends RenderableComponent {
      * Default {@link Params} instance so {@link DebugRender} callbacks
      * can be used without requiring custom params to be created.
      */
-    private final Params DEFAULT_PARAMS = new Params() {
-    };
+    private final Params DEFAULT_PARAMS = new Params() {};
 
     // ------------------------------------------------------------------------
     // Fields
@@ -151,31 +169,34 @@ public class DebugRender extends RenderableComponent {
     // Factory methods
     // ------------------------------------------------------------------------
 
-    public static DebugRender makeForBatch(Callbacks.TypedArg<Params> onRender) {
-        return new DebugRender(onRender, null, null, null);
+    public static DebugRender makeForBatch(Entity entity, Callbacks.TypedArg<Params> onRender) {
+        return new DebugRender(entity, onRender, null, null, null);
     }
 
-    public static DebugRender makeForBatch(Callbacks.TypedArg<Params> onRender, Params params) {
-        return new DebugRender(onRender, params, null, null);
+    public static DebugRender makeForBatch(Entity entity, Callbacks.TypedArg<Params> onRender, Params params) {
+        return new DebugRender(entity, onRender, params, null, null);
     }
 
-    public static DebugRender makeForShapes(Callbacks.TypedArg<Params> onRender) {
-        return new DebugRender(null, null, onRender, null);
+    public static DebugRender makeForShapes(Entity entity, Callbacks.TypedArg<Params> onRender) {
+        return new DebugRender(entity, null, null, onRender, null);
     }
 
-    public static DebugRender makeForShapes(Callbacks.TypedArg<Params> onRender, Params params) {
-        return new DebugRender(null, null, onRender, params);
+    public static DebugRender makeForShapes(Entity entity, Callbacks.TypedArg<Params> onRender, Params params) {
+        return new DebugRender(entity, null, null, onRender, params);
     }
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
-    public DebugRender() {
+    public DebugRender(Entity entity) {
+        super(entity);
     }
 
-    private DebugRender(Callbacks.TypedArg<Params> onBatchRender, Params batchParams,
+    private DebugRender(Entity entity,
+                        Callbacks.TypedArg<Params> onBatchRender, Params batchParams,
                         Callbacks.TypedArg<Params> onShapeRender, Params shapeParams) {
+        super(entity);
         this.onBatchRender = onBatchRender;
         this.onShapeRender = onShapeRender;
         this.onBatchRenderParams = (batchParams != null) ? batchParams : DEFAULT_PARAMS;

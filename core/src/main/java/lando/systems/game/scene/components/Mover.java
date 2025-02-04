@@ -3,6 +3,7 @@ package lando.systems.game.scene.components;
 import com.badlogic.gdx.math.Vector2;
 import lando.systems.game.math.Calc;
 import lando.systems.game.scene.framework.Component;
+import lando.systems.game.scene.framework.Entity;
 import lando.systems.game.utils.Callbacks;
 import lando.systems.game.utils.Direction;
 
@@ -13,7 +14,6 @@ public class Mover extends Component {
 
     private final Vector2 remainder = new Vector2();
 
-    // TODO(brian): should the default be 'only solid' or should it be 'none'?
     /**
      * Specifies {@link Collider.Mask} types should be
      * checked for possible collisions. Defaults to {@link Collider.Mask#solid},
@@ -33,8 +33,13 @@ public class Mover extends Component {
         implements Callbacks.TypedArg.Params {
     }
 
-    public Mover() {
-        this.collider = null;
+    public Mover(Entity entity) {
+        this(entity, null);
+    }
+
+    public Mover(Entity entity, Collider collider) {
+        super(entity);
+        this.collider = collider;
         this.onHitX = null;
         this.onHitY = null;
         this.speed = new Vector2();
@@ -73,12 +78,12 @@ public class Mover extends Component {
     }
 
     // ------------------------------------------------------------------------
-    // Update on each frame, when active
+    // Methods to set the OnHit callbacks after construction
     // ------------------------------------------------------------------------
 
     @Override
     public void update(float dt) {
-        if (!active) return;
+        if (inactive()) return;
 
         // need a position to be moved
         var position = entity.getIfActive(Position.class);
@@ -125,7 +130,6 @@ public class Mover extends Component {
             return false;
         }
 
-        // is there a solid collider 1 pixel directly below this mover's associated collider?
         var hitSolid = collider.check(Collider.Mask.solid, 0, -1);
 
         return hitSolid;
@@ -134,6 +138,11 @@ public class Mover extends Component {
     // ------------------------------------------------------------------------
     // Methods to modify this mover's speed in various ways
     // ------------------------------------------------------------------------
+
+    public void stop() {
+        stopX();
+        stopY();
+    }
 
     public void stopX() {
         speed.x = 0f;
@@ -164,14 +173,14 @@ public class Mover extends Component {
      * NOTE: mostly for internal use in {@link #update(float dt)}, which will attempt
      *  to move on both axes based on the current speed, but they can also be used
      *  for 'out of band' movement, especially if there is no {@link Collider} associated
-     *  with the {@link lando.systems.game.scene.framework.Entity} that this {@link Mover}
+     *  with the {@link Entity} that this {@link Mover}
      *  component is attached to.
      */
     public boolean moveX(int amount) {
         var position = entity.getIfActive(Position.class);
         if (position == null) return false;
 
-        if (collider == null) {
+        if (collider == null || collider.inactive()) {
             position.value.x += amount;
             return true;
         } else {
@@ -203,14 +212,14 @@ public class Mover extends Component {
      * NOTE: mostly for internal use in {@link #update(float dt)}, which will attempt
      *  to move on both axes based on the current speed, but they can also be used
      *  for 'out of band' movement, especially if there is no {@link Collider} associated
-     *  with the {@link lando.systems.game.scene.framework.Entity} that this {@link Mover}
+     *  with the {@link Entity} that this {@link Mover}
      *  component is attached to.
      */
     public boolean moveY(int amount) {
         var position = entity.getIfActive(Position.class);
         if (position == null) return false;
 
-        if (collider == null) {
+        if (collider == null || collider.inactive()) {
             position.value.y += amount;
             return true;
         } else {

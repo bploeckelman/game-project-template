@@ -5,8 +5,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import lando.systems.game.math.Calc;
+import lando.systems.game.scene.Scene;
 import lando.systems.game.scene.components.Position;
 import lando.systems.game.scene.framework.ComponentFamily;
+import lando.systems.game.scene.framework.Entity;
 import lando.systems.game.utils.Util;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
@@ -18,6 +20,14 @@ public abstract class RenderableComponent extends ComponentFamily {
     public final Vector2 defaultScale = new Vector2(1, 1);
     public final Vector2 scale = defaultScale.cpy();
     public final float scaleReturnSpeed = 4f;
+
+    public RenderableComponent(Entity entity) {
+        super(entity);
+    }
+
+    public RenderableComponent(Scene<?> scene) {
+        super(scene);
+    }
 
     @Override
     public void update(float dt) {

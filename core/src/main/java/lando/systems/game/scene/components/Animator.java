@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import lando.systems.game.assets.Anims;
 import lando.systems.game.math.Calc;
+import lando.systems.game.scene.framework.Entity;
 import lando.systems.game.scene.framework.families.RenderableComponent;
 import lando.systems.game.utils.Util;
 
@@ -16,16 +17,17 @@ public class Animator extends RenderableComponent {
     public int facing;
 
     @SuppressWarnings("unchecked")
-    public Animator(Anims.Type type) {
-        this((Animation<TextureRegion>) Anims.container.get(type));
+    public Animator(Entity entity, Anims.Type type) {
+        this(entity, (Animation<TextureRegion>) Anims.container.get(type));
     }
 
-    public Animator(Animation<TextureRegion> animation) {
-        this(animation.getKeyFrame(0));
+    public Animator(Entity entity, Animation<TextureRegion> animation) {
+        this(entity, animation.getKeyFrame(0));
         this.animation = animation;
     }
 
-    public Animator(TextureRegion keyframe) {
+    public Animator(Entity entity, TextureRegion keyframe) {
+        super(entity);
         this.animation = null;
         this.keyframe = keyframe;
         this.size.set(keyframe.getRegionWidth(), keyframe.getRegionHeight());

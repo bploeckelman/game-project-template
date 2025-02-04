@@ -1,31 +1,25 @@
 package lando.systems.game.scene;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import lando.systems.game.assets.Anims;
-import lando.systems.game.assets.Assets;
 import lando.systems.game.assets.Icons;
 import lando.systems.game.assets.Patches;
 import lando.systems.game.scene.components.*;
 import lando.systems.game.scene.framework.Component;
 import lando.systems.game.scene.framework.Entity;
-import lando.systems.game.scene.framework.World;
+import lando.systems.game.screens.BaseScreen;
 import lando.systems.game.utils.Time;
 import lando.systems.game.utils.Util;
 
-public class Factory {
+public class EntityFactory {
 
-    private static Assets assets;
+    public static Entity heart(Scene<? extends BaseScreen> scene, float x, float y) {
+        var entity = scene.createEntity();
 
-    public static void init(Assets assets) {
-        Factory.assets = assets;
-    }
+        var assets = scene.screen.assets;
 
-    public static Entity heart(float x, float y) {
-        var entity = World.entities.create();
-        var position = new Position(x, y);
+        new Position(entity, x, y);
 
         var heartFull = assets.get(Icons.class, Icons.Type.HEART);
         var heartBroken = assets.get(Icons.class, Icons.Type.HEART_BROKEN);
@@ -34,19 +28,18 @@ public class Factory {
         var width = heartFull.getRegionWidth();
         var height = heartFull.getRegionHeight();
 
-        var image = new Image(heartFull);
+        var image = new Image(entity, heartFull);
         image.tint.set(tintFull);
         image.origin.set(width / 2f, height / 2f);
 
-        var collider = Collider.makeRect(Collider.Mask.effect, -width / 2f, -height / 2f, width, height);
+        var collider = Collider.makeRect(entity, Collider.Mask.effect, -width / 2f, -height / 2f, width, height);
 
-        var mover = new Mover();
-        mover.collider = collider;
-        mover.addCollidesWith(Collider.Mask.npc);
+        var mover = new Mover(entity, collider);
         mover.speed.setToRandomDirection().scl(MathUtils.random(300, 500));
+        mover.addCollidesWith(Collider.Mask.npc);
         mover.setOnHit((params) -> {
             // change the image/tint to indicate a hit
-            image.region = heartBroken;
+            image.set(heartBroken);
             image.tint.set(tintBroken);
 
             // change the image back to normal after a bit and self-destruct the timer
@@ -54,11 +47,11 @@ public class Factory {
             var timer = entity.get(Timer.class);
             if (timer == null) {
                 // no active timer, create and attach one
-                entity.attach(new Timer(hitDuration, () -> {
-                    image.region = heartFull;
+                new Timer(entity, hitDuration, () -> {
+                    image.set(heartFull);
                     image.tint.set(tintFull);
                     entity.destroy(Timer.class);
-                }), Timer.class);
+                });
             } else {
                 // timer was still in progress, reset it
                 timer.start(hitDuration);
@@ -88,33 +81,27 @@ public class Factory {
             }
         });
 
-        var debug = DebugRender.makeForShapes(DebugRender.DRAW_POSITION_AND_COLLIDER);
-
-        entity.attach(position, Position.class);
-        entity.attach(image, Image.class);
-        entity.attach(mover, Mover.class);
-        entity.attach(collider, Collider.class);
-        entity.attach(debug, DebugRender.class);
+        DebugRender.makeForShapes(entity, DebugRender.DRAW_POSITION_AND_COLLIDER);
 
         return entity;
     }
 
-    public static Entity circle(float x, float y, float radius) {
-        var entity = World.entities.create();
+    public static Entity circle(Scene<? extends BaseScreen> scene, float x, float y, float radius) {
+        var entity = scene.createEntity();
 
-        var position = new Position(x, y);
+        new Position(entity, x, y);
 
+        var assets = scene.screen.assets;
         var region = assets.atlas.findRegion("objects/circle");
-        var image = new Image(region);
+        var image = new Image(entity, region);
         image.size.set(2 * radius, 2 * radius);
         image.origin.set(radius, radius);
         image.tint.set(Util.randomColorPastel());
 
-        var collider = Collider.makeCirc(Collider.Mask.object, 0, 0, radius);
+        var collider = Collider.makeCirc(entity, Collider.Mask.object, 0, 0, radius);
 
         var speed = MathUtils.random(100f, 300f);
-        var mover = new Mover();
-        mover.collider = collider;
+        var mover = new Mover(entity, collider);
         mover.speed.setToRandomDirection().scl(speed);
         mover.addCollidesWith(Collider.Mask.object, Collider.Mask.solid);
         mover.setOnHit((params) -> {
@@ -131,32 +118,26 @@ public class Factory {
             }
         });
 
-        var debug = DebugRender.makeForShapes(DebugRender.DRAW_POSITION_AND_COLLIDER);
-
-        entity.attach(position, Position.class);
-        entity.attach(image, Image.class);
-        entity.attach(mover, Mover.class);
-        entity.attach(collider, Collider.class);
-        entity.attach(debug, DebugRender.class);
+        DebugRender.makeForShapes(entity, DebugRender.DRAW_POSITION_AND_COLLIDER);
 
         return entity;
     }
 
-    public static Entity hero(float x, float y) {
-        var entity = World.entities.create();
-        var position = new Position(x, y);
+    public static Entity hero(Scene<? extends BaseScreen> scene, float x, float y) {
+        var entity = scene.createEntity();
+
+        new Position(entity, x, y);
 
         float scale = 4f;
-        var animator = new Animator(Anims.Type.HERO_FALL);
+        var animator = new Animator(entity, Anims.Type.HERO_FALL);
         animator.origin.set(8 * scale, 0);
         animator.size.scl(scale);
 
-        var collider = Collider.makeRect(Collider.Mask.npc, -4 * scale, 0, 6 * scale, 12 * scale);
+        var collider = Collider.makeRect(entity, Collider.Mask.npc, -4 * scale, 0, 6 * scale, 12 * scale);
 
-        var mover = new Mover();
-        mover.collider = collider;
+        var mover = new Mover(entity, collider);
         mover.gravity = -500f;
-        mover.speed.set(400, 0);
+        mover.speed.set(350, 0);
         mover.setOnHit((params) -> {
             switch (params.direction()) {
                 case LEFT, RIGHT: {
@@ -170,13 +151,14 @@ public class Factory {
                     animator.scale.scl(0.66f, 1.33f);
 
                     // take a moment to recover
+                    // NOTE(brian): example use of Timer component for rudimentary game logic, 'self-destructing' when complete
                     var duration = 0.3f;
                     var timer = entity.get(Timer.class);
                     if (timer != null) {
                         // timer was still in progress, reset it
                         timer.start(duration);
                     } else {
-                        timer = new Timer(duration, () -> {
+                        new Timer(entity, duration, () -> {
                             // turn around
                             animator.facing *= -1;
                             // resume moving in the opposite direction
@@ -187,14 +169,14 @@ public class Factory {
                             // self-destruct the timer
                             entity.destroy(Timer.class);
                         });
-                        entity.attach(timer, Timer.class);
                     }
                 }
                 break;
             }
         });
 
-        var behavior = new Component() {
+        // behavior 'component' - example of an anonymous component used to implement simple game logic
+        new Component(entity) {
             @Override
             public void update(float dt) {
                 if (mover.onGround()) {
@@ -213,55 +195,39 @@ public class Factory {
             }
         };
 
-        var debug = DebugRender.makeForShapes(DebugRender.DRAW_POSITION_AND_COLLIDER);
-
-        entity.attach(position, Position.class);
-        entity.attach(animator, Animator.class);
-        entity.attach(mover, Mover.class);
-        entity.attach(collider, Collider.class);
-        entity.attach(debug, DebugRender.class);
-        entity.attach(behavior, Component.class);
+        DebugRender.makeForShapes(entity, DebugRender.DRAW_POSITION_AND_COLLIDER);
 
         return entity;
     }
 
-    public static Entity boundary(float x, float y, float w, float h) {
-        var entity = World.entities.create();
+    public static Entity boundary(Scene<? extends BaseScreen> scene, float x, float y, float w, float h) {
+        var entity = scene.createEntity();
 
         var halfWidth = w / 2f;
         var halfHeight = h / 2f;
-        var position = new Position(x + halfWidth, y + halfHeight);
-        var collider = Collider.makeRect(Collider.Mask.solid, -halfWidth, -halfHeight, w, h);
-        var patch = new Patch(assets, Patches.Type.PLAIN);
+
+        new Position(entity, x + halfWidth, y + halfHeight);
+        Collider.makeRect(entity, Collider.Mask.solid, -halfWidth, -halfHeight, w, h);
+
+        var patch = new Patch(entity, Patches.Type.PLAIN);
         patch.origin.set(halfWidth, halfHeight);
         patch.size.set(w, h);
 
-        var debug = DebugRender.makeForShapes(DebugRender.DRAW_POSITION_AND_COLLIDER);
-
-        entity.attach(position, Position.class);
-        entity.attach(collider, Collider.class);
-        entity.attach(patch, Patch.class);
-        entity.attach(debug, DebugRender.class);
+        DebugRender.makeForShapes(entity, DebugRender.DRAW_POSITION_AND_COLLIDER);
 
         return entity;
     }
 
-    public static Entity map(float x, float y, String tmxFilePath, String solidLayerName, OrthographicCamera camera, SpriteBatch batch) {
-        var entity = World.entities.create();
+    public static Entity map(Scene<? extends BaseScreen> scene, float x, float y, String tmxFilePath, String solidLayerName) {
+        var entity = scene.createEntity();
 
-        var position = new Position(x, y);
+        new Position(entity, x, y);
 
-        var tilemap = new Tilemap(tmxFilePath, camera,  batch);
-        var collider = tilemap.makeGridCollider(solidLayerName);
-        var boundary = tilemap.makeBoundary();
+        var tilemap = new Tilemap(entity, tmxFilePath, scene.screen.worldCamera,  scene.screen.batch);
+        tilemap.makeGridCollider(solidLayerName);
+        tilemap.makeBoundary();
 
-        var debug = DebugRender.makeForShapes(DebugRender.DRAW_POSITION_AND_COLLIDER);
-
-        entity.attach(position, Position.class);
-        entity.attach(collider, Collider.class);
-        entity.attach(tilemap, Tilemap.class);
-        entity.attach(boundary, Boundary.class);
-        entity.attach(debug, DebugRender.class);
+        DebugRender.makeForShapes(entity, DebugRender.DRAW_POSITION_AND_COLLIDER);
 
         return entity;
     }

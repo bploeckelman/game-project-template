@@ -3,11 +3,7 @@ package lando.systems.game;
 import aurelienribon.tweenengine.Tween;
 import aurelienribon.tweenengine.TweenManager;
 import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.PerspectiveCamera;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.math.Circle;
@@ -17,19 +13,12 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import lando.systems.game.assets.Assets;
 import lando.systems.game.assets.ScreenTransitions;
-import lando.systems.game.scene.Factory;
 import lando.systems.game.screens.BaseScreen;
 import lando.systems.game.screens.GameScreen;
 import lando.systems.game.screens.TitleScreen;
 import lando.systems.game.screens.Transition;
 import lando.systems.game.utils.Time;
-import lando.systems.game.utils.accessors.CameraAccessor;
-import lando.systems.game.utils.accessors.CircleAccessor;
-import lando.systems.game.utils.accessors.ColorAccessor;
-import lando.systems.game.utils.accessors.PerspectiveCameraAccessor;
-import lando.systems.game.utils.accessors.RectangleAccessor;
-import lando.systems.game.utils.accessors.Vector2Accessor;
-import lando.systems.game.utils.accessors.Vector3Accessor;
+import lando.systems.game.utils.accessors.*;
 
 public class Main extends ApplicationAdapter {
 
@@ -53,7 +42,6 @@ public class Main extends ApplicationAdapter {
 
         assets = new Assets();
         Transition.init(assets);
-        Factory.init(assets);
 
         tween = new TweenManager();
         Tween.setWaypointsLimit(4);

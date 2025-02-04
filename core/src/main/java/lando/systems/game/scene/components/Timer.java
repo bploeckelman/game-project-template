@@ -1,6 +1,7 @@
 package lando.systems.game.scene.components;
 
 import lando.systems.game.scene.framework.Component;
+import lando.systems.game.scene.framework.Entity;
 import lando.systems.game.utils.Callbacks;
 
 public class Timer extends Component {
@@ -9,16 +10,18 @@ public class Timer extends Component {
 
     public Callbacks.NoArg onEnd;
 
-    public Timer() {
+    public Timer(Entity entity) {
+        super(entity);
         this.duration = 0;
         this.onEnd = null;
     }
 
-    public Timer(float duration) {
-        this(duration, null);
+    public Timer(Entity entity, float duration) {
+        this(entity, duration, null);
     }
 
-    public Timer(float duration, Callbacks.NoArg onEnd) {
+    public Timer(Entity entity, float duration, Callbacks.NoArg onEnd) {
+        super(entity);
         this.onEnd = onEnd;
         start(duration);
     }
