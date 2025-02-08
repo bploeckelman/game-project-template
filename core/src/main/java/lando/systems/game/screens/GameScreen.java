@@ -9,15 +9,15 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import lando.systems.game.Config;
 import lando.systems.game.assets.Icons;
 import lando.systems.game.utils.Util;
-import lando.systems.game.world.SceneTest;
+import lando.systems.game.world.ScenePlatformer;
 
 public class GameScreen extends BaseScreen {
 
     private final Color backgroundColor = new Color(0x131711ff);
 
     public GameScreen() {
-        this.scene = new SceneTest(this);
-//        this.scene = new ScenePlatformer(this);
+//        this.scene = new SceneTest(this);
+        this.scene = new ScenePlatformer(this);
     }
 
     @Override

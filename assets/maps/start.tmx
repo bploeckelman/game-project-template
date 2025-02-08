@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="15" height="10" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="3">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="15" height="10" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="4">
  <tileset firstgid="1" source="tilesets/warp-room.tsx"/>
  <imagelayer id="4" name="background">
   <image source="backgrounds/bg_00_warp_room.png" width="240" height="160"/>
  </imagelayer>
  <layer id="3" name="back" width="15" height="10">
-  <data encoding="base64" compression="zstd">
-   KLUv/WBYATUCAHQDAEgAAABJAAAASgAAAEsAAABMAFIAAABTAAAAVAAAAFUAAABWAFwAAABdAAAAXgAAAF8AAABgAAQAHqBBAFkBZPFQnRA=
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFAwU8gNgTiL2A2BuIfUjQGwTEwUAcAsShQBxGgt4YII4F4jggjgfiBBL0EgsA1q4E7Q==
   </data>
  </layer>
  <layer id="2" name="middle" width="15" height="10">
-  <data encoding="base64" compression="zstd">
-   KLUv/WBYAW0CAJQCDAAAAA0AAAAODwAAABAAAAAWAAAAFwAZAAAAGgAAACAAJC0kKi4AAAANAPcSNrY7/LJS/kFsxUwABAAOgQg74+iriQ2c3ThTsemO
+  <data encoding="base64" compression="zlib">
+   eJzjYWBg4AViPhIwPxALALEYEIszkAYkgVgKiBVI1AcDKjTSq4uEaW0vPnvQ5WjlX2L0ajGghguxWA+IASUuBus=
   </data>
  </layer>
  <objectgroup id="5" name="objects">
-  <object id="2" template="templates/object-spawn.tx" x="120" y="120"/>
+  <object id="3" template="templates/object-spawn.tx" name="spawn" x="120" y="120"/>
  </objectgroup>
  <layer id="1" name="front" width="15" height="10">
-  <data encoding="base64" compression="zstd">
-   KLUv/WBYAe0AADAAMAAAADEIgHAtHjgc4ALQwt5rYBrMr2QAobof
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFlAIDIDaE0rQG+OyBuWMwAAAPpwFU
   </data>
  </layer>
 </map>

@@ -125,11 +125,14 @@ public class EntityFactory {
     }
 
     public static Entity hero(Scene<? extends BaseScreen> scene, float x, float y) {
+        return hero(scene, x, y, 4f);
+    }
+
+    public static Entity hero(Scene<? extends BaseScreen> scene, float x, float y, float scale) {
         var entity = scene.createEntity();
 
         new Position(entity, x, y);
 
-        float scale = 4f;
         var animator = new Animator(entity, Anims.Type.HERO_FALL);
         animator.origin.set(8 * scale, 0);
         animator.size.scl(scale);
@@ -236,13 +239,17 @@ public class EntityFactory {
         return entity;
     }
 
-    public static Entity map(Scene<? extends BaseScreen> scene, float x, float y, String tmxFilePath, String solidLayerName) {
+    public static Entity map(Scene<? extends BaseScreen> scene, String tmxFilePath, String collisionLayer) {
+        return map(scene, 0, 0, tmxFilePath, collisionLayer);
+    }
+
+    public static Entity map(Scene<? extends BaseScreen> scene, float x, float y, String tmxFilePath, String collisionLayer) {
         var entity = scene.createEntity();
 
         new Position(entity, x, y);
 
         var tilemap = new Tilemap(entity, tmxFilePath, scene.screen.worldCamera,  scene.screen.batch);
-        tilemap.makeGridCollider(solidLayerName);
+        tilemap.makeGridCollider(collisionLayer);
         tilemap.makeBoundary();
 
         DebugRender.makeForShapes(entity, DebugRender.DRAW_POSITION_AND_COLLIDER);
