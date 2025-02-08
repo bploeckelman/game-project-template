@@ -1,10 +1,11 @@
-package lando.systems.game.scene;
+package lando.systems.game.world;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
 import lando.systems.game.assets.Anims;
 import lando.systems.game.assets.Icons;
 import lando.systems.game.assets.Patches;
+import lando.systems.game.scene.Scene;
 import lando.systems.game.scene.components.*;
 import lando.systems.game.scene.framework.Component;
 import lando.systems.game.scene.framework.Entity;
