@@ -30,6 +30,8 @@ public class GameScreen extends BaseScreen {
         }
 
         scene.update(dt);
+
+        super.update(dt);
     }
 
     @Override

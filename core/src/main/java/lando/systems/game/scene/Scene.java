@@ -1,6 +1,7 @@
 package lando.systems.game.scene;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import lando.systems.game.Config;
 import lando.systems.game.scene.framework.Entity;
 import lando.systems.game.scene.framework.World;
 import lando.systems.game.scene.framework.families.RenderableComponent;
@@ -20,6 +21,11 @@ public class Scene<ScreenType extends BaseScreen> {
     public Scene(ScreenType screen) {
         this.screen = screen;
         this.world = new World<>(this);
+
+        // reset the screen's world camera to default for each new scene
+        var camera = screen.worldCamera;
+        camera.setToOrtho(false, Config.framebuffer_width, Config.framebuffer_height);
+        camera.update();
     }
 
     public Entity createEntity() {

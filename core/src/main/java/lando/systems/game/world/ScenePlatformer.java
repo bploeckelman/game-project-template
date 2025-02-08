@@ -2,7 +2,9 @@ package lando.systems.game.world;
 
 import com.badlogic.gdx.maps.MapObject;
 import lando.systems.game.scene.Scene;
+import lando.systems.game.scene.components.Boundary;
 import lando.systems.game.scene.components.Tilemap;
+import lando.systems.game.scene.components.ViewController;
 import lando.systems.game.screens.GameScreen;
 import lando.systems.game.utils.Util;
 
@@ -13,10 +15,21 @@ public class ScenePlatformer extends Scene<GameScreen> {
     public ScenePlatformer(GameScreen screen) {
         super(screen);
 
-        var map = EntityFactory.map(this, "maps/start.tmx", "middle");
+        // configure the camera to emulate a low res display
+        var width = 240;
+        var height = 160;
+        var camera = screen.worldCamera;
+        camera.setToOrtho(false, width, height);
+        camera.update();
 
+        var map = EntityFactory.map(this, "maps/start.tmx", "middle");
+        var boundary = map.get(Boundary.class);
         var tilemap = map.get(Tilemap.class);
+
         makeMapObjects(tilemap);
+
+        var cam = EntityFactory.cam(this, boundary);
+        cam.get(ViewController.class).target(boundary.center());
     }
 
     private void makeMapObjects(Tilemap tilemap) {
@@ -34,7 +47,7 @@ public class ScenePlatformer extends Scene<GameScreen> {
             var y = props.get("y", Float.class);
 
             if (name.equals("spawn")) {
-                EntityFactory.hero(this, x, y, 2f);
+                EntityFactory.hero(this, x, y, 1f);
             }
         }
     }

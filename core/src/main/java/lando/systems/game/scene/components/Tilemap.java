@@ -3,10 +3,7 @@ package lando.systems.game.scene.components;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
-import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.maps.tiled.*;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.GdxRuntimeException;
@@ -26,6 +23,7 @@ public class Tilemap extends RenderableComponent {
     }};
 
     private final List<TiledMapTileLayer> layers;
+    private final List<TiledMapImageLayer> imageLayers;
     private final Rectangle bounds;
 
     // TODO(brian): could move to separate component to share between Tilemap components
@@ -44,11 +42,19 @@ public class Tilemap extends RenderableComponent {
         this.camera = camera;
         this.map = (new TmxMapLoader()).load(tmxFilePath, params);
         this.renderer = new OrthogonalTiledMapRenderer(map, UNIT_SCALE, batch);
+
+        // TODO(brian): refactor, this is very squatch-map-specific currently
         this.layers = StreamSupport.stream(map.getLayers().spliterator(), false)
             .filter(layer -> !layer.getName().equals("solid"))
             .filter(layer -> layer instanceof TiledMapTileLayer)
             .map(TiledMapTileLayer.class::cast)
             .toList();
+
+        this.imageLayers = StreamSupport.stream(map.getLayers().spliterator(), false)
+            .filter(layers -> layers instanceof TiledMapImageLayer)
+            .map(TiledMapImageLayer.class::cast)
+            .toList();
+
         this.bounds = new Rectangle();
 
         var props = map.getProperties();
@@ -93,6 +99,14 @@ public class Tilemap extends RenderableComponent {
         var y = (pos != null) ? pos.y() : 0f;
 
         renderer.setView(camera);
+
+        // TODO(brian): assumes all image layers are 'background'
+        for (var layer : imageLayers) {
+            layer.setOffsetX(x);
+            layer.setOffsetY(-y);
+            renderer.renderImageLayer(layer);
+        }
+
         for (var layer : layers) {
             layer.setOffsetX(x);
             layer.setOffsetY(-y);

@@ -140,8 +140,8 @@ public class EntityFactory {
         var collider = Collider.makeRect(entity, Collider.Mask.npc, -4 * scale, 0, 6 * scale, 12 * scale);
 
         var mover = new Mover(entity, collider);
-        mover.gravity = -500f;
-        mover.speed.set(350, 0);
+        mover.gravity = -150f;
+        mover.speed.set(40, 0);
         mover.setOnHit((params) -> {
             switch (params.direction()) {
                 case LEFT, RIGHT: {
@@ -168,7 +168,7 @@ public class EntityFactory {
                             // resume moving in the opposite direction
                             mover.speed.x = speedX;
                             // jump!
-                            mover.speed.y = 500;
+                            mover.speed.y = 125;
 
                             // self-destruct the timer
                             entity.destroy(Timer.class);
@@ -253,6 +253,15 @@ public class EntityFactory {
         tilemap.makeBoundary();
 
         DebugRender.makeForShapes(entity, DebugRender.DRAW_POSITION_AND_COLLIDER);
+
+        return entity;
+    }
+
+    public static Entity cam(Scene<?> scene, Boundary boundary) {
+        var entity = scene.createEntity();
+
+        new Viewer(entity, scene.screen.worldCamera);
+        new ViewController(entity, boundary);
 
         return entity;
     }

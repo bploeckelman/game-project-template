@@ -1,6 +1,7 @@
 package lando.systems.game.scene.components;
 
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import lando.systems.game.scene.framework.Component;
 import lando.systems.game.scene.framework.Entity;
 
@@ -8,6 +9,8 @@ public class Boundary extends Component {
 
     // TODO(brian): support other shapes through a shared interface if needed
     public final Rectangle bounds = new Rectangle();
+
+    private final Vector2 center = new Vector2();
 
     public Boundary(Entity entity, Rectangle bounds) {
         super(entity);
@@ -26,4 +29,8 @@ public class Boundary extends Component {
 
     public float halfWidth() { return bounds.width / 2; }
     public float halfHeight() { return bounds.height / 2; }
+
+    public Vector2 center() {
+        return center.set(left() + halfWidth(), bottom() + halfHeight());
+    }
 }

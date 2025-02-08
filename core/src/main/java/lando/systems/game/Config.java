@@ -21,7 +21,7 @@ public class Config {
     public enum Flag {
         //@formatter:off
           GLOBAL(true)
-        , RENDER(true)
+        , RENDER(false)
         , UI(false)
         , LOG(true)
         , FRAME_STEP(false)
