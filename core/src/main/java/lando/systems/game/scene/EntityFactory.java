@@ -195,7 +195,24 @@ public class EntityFactory {
             }
         };
 
-        DebugRender.makeForShapes(entity, DebugRender.DRAW_POSITION_AND_COLLIDER);
+        // quick test of using fonts from their asset container
+//        DebugRender.makeForShapes(entity, DebugRender.DRAW_POSITION_AND_COLLIDER);
+        DebugRender.makeForBatch(entity, (params) -> {
+            if (params instanceof DebugRender.TextParams textParams) {
+                var batch = textParams.batch;
+                var position = entity.get(Position.class);
+
+                textParams.fontType.getFont(textParams.fontVariant)
+                    .ifPresent(font -> {
+                        var assets = entity.scene.screen.assets;
+                        var layout = assets.layout;
+                        layout.setText(font, textParams.text);
+                        font.draw(batch, layout,
+                            position.x() - layout.width / 2f,
+                            position.y() + animator.size.y);
+                    });
+            }
+        }, new DebugRender.TextParams("Hero"));
 
         return entity;
     }

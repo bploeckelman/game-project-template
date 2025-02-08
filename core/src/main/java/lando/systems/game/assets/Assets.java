@@ -3,13 +3,14 @@ package lando.systems.game.assets;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.*;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGeneratorLoader;
+import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.I18NBundle;
@@ -52,6 +53,7 @@ public class Assets implements Disposable {
         containers = new ObjectMap<>();
         containers.put(Anims.class, new Anims());
         containers.put(Icons.class, new Icons());
+        containers.put(Fonts.class, new Fonts());
         containers.put(Patches.class, new Patches());
         containers.put(ScreenTransitions.class, new ScreenTransitions());
 
@@ -77,6 +79,13 @@ public class Assets implements Disposable {
         disposables.add(mgr);
         disposables.add(batch);
 
+        // setup asset manager to support ttf/otf fonts
+        var internalFileResolver = new InternalFileHandleResolver();
+        var fontLoader = new FreetypeFontLoader(internalFileResolver);
+        mgr.setLoader(FreeTypeFontGenerator.class, new FreeTypeFontGeneratorLoader(internalFileResolver));
+        mgr.setLoader(BitmapFont.class, ".ttf", fontLoader);
+        mgr.setLoader(BitmapFont.class, ".otf", fontLoader);
+
         // populate asset manager
         {
             // one-off items
@@ -86,7 +95,8 @@ public class Assets implements Disposable {
             // textures
             mgr.load("images/libgdx.png", Texture.class);
 
-            // fonts // TODO: asset loader for FreeTypeFont that takes ttf filename and params?
+            // fonts
+            containers.get(Fonts.class).load(this);
 
             // music
 

@@ -4,14 +4,21 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
+import java.io.Serial;
+
 public interface AssetEnum<ResourceType> {
 
     class MethodImplementationMissingException extends GdxRuntimeException {
+        @Serial
         private static final long serialVersionUID = -8967847562533119940L;
 
         public MethodImplementationMissingException(String methodName) {
             super("override %s to use param in concrete AssetType enum".formatted(methodName));
         }
+    }
+
+    default ResourceType resourceType() {
+        throw new MethodImplementationMissingException("resourceType");
     }
 
     default String textureRegionName() {

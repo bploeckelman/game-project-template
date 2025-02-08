@@ -3,6 +3,7 @@ package lando.systems.game.scene.components;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import lando.systems.game.Config;
+import lando.systems.game.assets.Fonts;
 import lando.systems.game.scene.framework.Entity;
 import lando.systems.game.scene.framework.families.RenderableComponent;
 import lando.systems.game.utils.Callbacks;
@@ -29,6 +30,26 @@ public class DebugRender extends RenderableComponent {
         public DebugRender self;
         public SpriteBatch batch;
         public ShapeDrawer shapes;
+    }
+
+    /**
+     * Custom parameters for debug rendering text
+     */
+    public static class TextParams extends Params {
+
+        public Fonts.Type fontType;
+        public String fontVariant;
+        public String text;
+
+        public TextParams(String text) {
+            this(Fonts.Type.ROUNDABOUT, Fonts.Variant.DEFAULT_NAME, text);
+        }
+
+        public TextParams(Fonts.Type fontType, String fontVariant, String text) {
+            this.fontType = fontType;
+            this.fontVariant = fontVariant;
+            this.text = text;
+        }
     }
 
     /**

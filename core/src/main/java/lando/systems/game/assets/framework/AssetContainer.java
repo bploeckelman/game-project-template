@@ -41,6 +41,14 @@ public abstract class AssetContainer<T extends Enum<T> & AssetEnum<ResourceType>
         this.resources = new ObjectMap<>();
     }
 
+    /**
+     * Optional method to be overridden when needed to perform custom loading in
+     * {@link com.badlogic.gdx.assets.AssetManager}, intended to be called in
+     * {@link Assets} constructor alongside other {@link com.badlogic.gdx.assets.AssetManager#load}
+     * calls
+     */
+    public void load(Assets assets) { /* no-op by default */ }
+
     public abstract void init(Assets assets);
 
     public ResourceType get(T assetType) {
