@@ -29,6 +29,8 @@ public class Config {
         ;
         //@formatter:on
 
+        private static final String TAG = "Config.Flag";
+
         private boolean isEnabled;
 
         Flag(boolean isEnabled) {
@@ -55,7 +57,7 @@ public class Config {
          */
         public boolean enable() {
             isEnabled = true;
-            Util.log("Enabled Config.Flag.%s='%b'".formatted(name(), isEnabled));
+            Util.log(TAG, "enabled: %s='%b'".formatted(name(), isEnabled));
             return isEnabled;
         }
 
@@ -64,7 +66,7 @@ public class Config {
          */
         public boolean disable() {
             isEnabled = false;
-            Util.log("Disabled Config.Flag.%s='%b'".formatted(name(), isEnabled));
+            Util.log(TAG, "disabled: %s='%b'".formatted(name(), isEnabled));
             return isEnabled;
         }
 
@@ -76,7 +78,7 @@ public class Config {
          */
         public boolean set(boolean enabled) {
             isEnabled = enabled;
-            Util.log("Set Config.Flag.%s='%b'".formatted(name(), isEnabled));
+            Util.log(TAG, "set: %s='%b'".formatted(name(), isEnabled));
             return isEnabled;
         }
 
@@ -87,7 +89,7 @@ public class Config {
          */
         public boolean toggle() {
             isEnabled = !isEnabled;
-            Util.log("Toggled Config.Flag.%s='%b'".formatted(name(), isEnabled));
+            Util.log(TAG, "toggled: %s='%b'".formatted(name(), isEnabled));
             return isEnabled;
         }
     }
