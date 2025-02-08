@@ -15,7 +15,10 @@ import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Pools;
 import lando.systems.game.Config.Flag;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.function.Function;
 
 public class Util {
 
@@ -49,14 +52,20 @@ public class Util {
     // Logging related
     // ------------------------------------------------------------------------
 
+    public static final DateTimeFormatter TIME_FMT_SIMPLE = DateTimeFormatter.ofPattern("hh:mm:ss");
+
     public static void log(String msg) {
-        if (Flag.LOG.isDisabled()) return;
-        Gdx.app.log(Util.class.getSimpleName(), msg);
+        log("", msg);
+    }
+
+    public static void log(String tag, Object object, Function<Object, String> toString) {
+        log(tag, toString.apply(object));
     }
 
     public static void log(String tag, String msg) {
         if (Flag.LOG.isDisabled()) return;
-        Gdx.app.log(tag, msg);
+        var time = TIME_FMT_SIMPLE.format(LocalDateTime.now());
+        Gdx.app.log("%s %s".formatted(time, tag), msg);
     }
 
     // ------------------------------------------------------------------------
