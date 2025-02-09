@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader;
 import lando.systems.game.assets.framework.AssetContainer;
 import lando.systems.game.assets.framework.AssetEnum;
+import lando.systems.game.utils.Util;
 
 import java.io.Serial;
 import java.util.*;
@@ -44,6 +45,8 @@ import java.util.*;
  * </ul>
  */
 public class Fonts extends AssetContainer<Fonts.Type, Fonts.FontVariantMap> {
+
+    private static final String TAG = Fonts.class.getSimpleName();
 
     /**
      * Extension of a parameterized collection type, a Java `typedef`.
@@ -83,12 +86,21 @@ public class Fonts extends AssetContainer<Fonts.Type, Fonts.FontVariantMap> {
         }
 
         @Override
-        public FontVariantMap resourceType() {
+        public FontVariantMap resource() {
             return fontByVariantName;
         }
 
-        public Optional<BitmapFont> getFont(String variantName) {
-            return Optional.ofNullable(fontByVariantName.get(variantName));
+        public BitmapFont get() {
+            return fontByVariantName.get(Variant.DEFAULT_NAME);
+        }
+
+        public BitmapFont getFont(String variantName) {
+            var variant = fontByVariantName.get(variantName);
+            return Optional.ofNullable(variant).orElseGet(() -> {
+                Util.log(TAG, "failed to find font %s variant '%s', using 'default' instead"
+                    .formatted(name(), variantName));
+                return get();
+            });
         }
 
         public String assetMgrKey(Variant variant) {

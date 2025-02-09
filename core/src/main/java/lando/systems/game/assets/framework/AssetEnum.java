@@ -17,7 +17,7 @@ public interface AssetEnum<ResourceType> {
         }
     }
 
-    default ResourceType resourceType() {
+    default ResourceType resource() {
         throw new MethodImplementationMissingException("resourceType");
     }
 
